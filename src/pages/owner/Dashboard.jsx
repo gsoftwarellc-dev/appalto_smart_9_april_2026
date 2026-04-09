@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
 import { DollarSign, Shield, Users, Loader2 } from 'lucide-react';
+import { formatEuro } from '../../utils/currency';
 import RevenueDashboard from './RevenueDashboard';
 import api from '../../services/backendApi';
 
@@ -59,7 +60,7 @@ const Dashboard = () => {
                         <DollarSign className="h-4 w-4 text-green-600" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">€{parseFloat(stats?.total_revenue || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
+                        <div className="text-2xl font-bold">{formatEuro(stats?.total_revenue || 0)}</div>
                         <p className="text-xs text-muted-foreground">+20.1% {t('owner.dashboard.lastMonth')}</p>
                     </CardContent>
                 </Card>

@@ -11,6 +11,11 @@ node_modules
 dist
 dist-ssr
 *.local
+*.sql
+.deploy-keys/
+appalto-backend/vendor/
+appalto-backend/public/assets/
+appalto-backend/.git-local-backup/
 
 # Editor directories and files
 .vscode/*

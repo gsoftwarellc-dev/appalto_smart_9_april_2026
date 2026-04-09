@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { Bell, FileCheck, MessageSquare, Award, FileText, AlertCircle, CheckCircle } from 'lucide-react';
@@ -6,11 +7,12 @@ import { useNotifications } from '../context/NotificationContext';
 import { Button } from '../components/ui/Button';
 
 const Notifications = () => {
+    const { t } = useTranslation();
     const { notifications, unreadCount, markAsRead, markAllAsRead, refresh } = useNotifications();
 
     useEffect(() => {
         refresh();
-    }, []);
+    }, [refresh]);
 
     const getIcon = (type) => {
         switch (type) {
@@ -35,21 +37,21 @@ const Notifications = () => {
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center flex-wrap gap-4">
                 <div>
-                    <h2 className="text-3xl font-bold tracking-tight">Notifications</h2>
+                    <h2 className="text-3xl font-bold tracking-tight">{t('notifications.title')}</h2>
                     <p className="text-gray-500">
-                        {unreadCount > 0 ? `You have ${unreadCount} unread notifications` : 'All caught up!'}
+                        {unreadCount > 0 ? t('notifications.unreadCount', { count: unreadCount }) : t('notifications.allCaughtUp')}
                     </p>
                 </div>
                 <div className="flex items-center gap-2">
                     {unreadCount > 0 && (
                         <>
                             <Button variant="outline" size="sm" onClick={markAllAsRead}>
-                                <CheckCircle className="h-4 w-4 mr-1" /> Mark all as read
+                                <CheckCircle className="h-4 w-4 mr-1" /> {t('notifications.markAllRead')}
                             </Button>
                             <Badge variant="default" className="bg-blue-600">
-                                <Bell className="h-3 w-3 mr-1" /> {unreadCount} New
+                                <Bell className="h-3 w-3 mr-1" /> {unreadCount} {t('notifications.new')}
                             </Badge>
                         </>
                     )}
@@ -79,7 +81,7 @@ const Notifications = () => {
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-start justify-between mb-1">
                                             <h3 className={`font-semibold text-gray-900 ${!isRead ? 'font-bold' : ''}`}>
-                                                {data.title || 'Notification'}
+                                                {data.title || t('notifications.newNotification')}
                                             </h3>
                                             <span className="text-xs text-gray-400 whitespace-nowrap ml-2">
                                                 {new Date(notification.created_at).toLocaleString()}
@@ -102,8 +104,8 @@ const Notifications = () => {
             {notifications.length === 0 && (
                 <div className="text-center py-12 bg-gray-50 rounded-lg border border-dashed border-gray-300">
                     <Bell className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                    <h3 className="text-lg font-medium text-gray-900">No notifications</h3>
-                    <p className="text-gray-500">You're all caught up! Check back later.</p>
+                    <h3 className="text-lg font-medium text-gray-900">{t('notifications.emptyTitle')}</h3>
+                    <p className="text-gray-500">{t('notifications.emptyDesc')}</p>
                 </div>
             )}
         </div>

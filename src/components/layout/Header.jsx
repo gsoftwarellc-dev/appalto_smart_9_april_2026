@@ -1,16 +1,15 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
-
 import { Button } from '../ui/Button';
 import { Globe, LogOut, User, Menu } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
+import NotificationDropdown from '../NotificationDropdown';
 
 const Header = ({ onMenuClick }) => {
     const { user, logout } = useAuth();
     const { t, i18n } = useTranslation();
-
+    const profilePath = user?.role === 'admin' ? '/admin/profile' : user?.role === 'contractor' ? '/contractor/profile' : null;
 
     const toggleLanguage = () => {
         const newLang = i18n.language === 'en' ? 'it' : 'en';
@@ -26,26 +25,40 @@ const Header = ({ onMenuClick }) => {
             </div>
 
             <div className="flex items-center gap-3">
-                {/* Notifications */}
-                {/* Language Switcher */}
+                <NotificationDropdown />
                 <Button variant="ghost" size="sm" onClick={toggleLanguage} className="flex items-center gap-2">
                     <Globe className="h-4 w-4" />
                     <span className="uppercase">{i18n.language}</span>
                 </Button>
 
-                {/* User Profile */}
-                <div className="flex items-center gap-3 border-l pl-4 border-gray-200">
-                    <div className="hidden sm:flex flex-col text-right min-w-0">
-                        <span className="text-sm font-medium text-gray-900 truncate">{user?.company_name || user?.name}</span>
-                        <span className="text-xs text-gray-500 capitalize">{user?.role}</span>
+                {profilePath && (
+                    <Link
+                        to={profilePath}
+                        className="flex items-center gap-3 border-l pl-4 border-gray-200 hover:opacity-90"
+                        title={t('sidebar.myProfile')}
+                    >
+                        <div className="hidden sm:flex flex-col text-right min-w-0">
+                            <span className="text-sm font-medium text-gray-900 truncate">{user?.company_name || user?.name}</span>
+                            <span className="text-xs text-gray-500 capitalize">{user?.role}</span>
+                        </div>
+                        <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 flex-shrink-0">
+                            <User className="h-5 w-5" />
+                        </div>
+                    </Link>
+                )}
+                {!profilePath && (
+                    <div className="flex items-center gap-3 border-l pl-4 border-gray-200">
+                        <div className="hidden sm:flex flex-col text-right min-w-0">
+                            <span className="text-sm font-medium text-gray-900 truncate">{user?.company_name || user?.name}</span>
+                            <span className="text-xs text-gray-500 capitalize">{user?.role}</span>
+                        </div>
+                        <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 flex-shrink-0">
+                            <User className="h-5 w-5" />
+                        </div>
                     </div>
-                    <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 flex-shrink-0">
-                        <User className="h-5 w-5" />
-                    </div>
-                </div>
+                )}
 
-                {/* Logout */}
-                <Button variant="ghost" size="sm" onClick={logout} title={t('sidebar.logout')}>
+                <Button variant="ghost" size="sm" onClick={logout} title={t('common.logout')}>
                     <LogOut className="h-5 w-5 text-gray-500 hover:text-red-500" />
                 </Button>
             </div>

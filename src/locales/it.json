@@ -30,8 +30,8 @@
         "submit": "Invia",
         "selectRole": "Seleziona Ruolo",
         "accountType": "Tipo di Account",
-        "admin": "Cliente / Amministratore",
-        "contractor": "Appaltatore / Impresa",
+        "admin": "Committente (Amm.re Condominio / Tecnico Delegato)",
+        "contractor": "Impresa Appaltatrice",
         "owner": "Proprietario",
         "noAccount": "Non hai un account?",
         "haveAccount": "Hai già un account?",
@@ -53,13 +53,30 @@
         "city": "Città",
         "province": "Provincia",
         "legalRepresentative": "Legale Rappresentante",
+        "fiscalCodeLegalRep": "Codice Fiscale (Legale Rappresentante)",
         "companyInfo": "Dati Aziendali",
         "registerHere": "Registrati qui",
         "loginHere": "Accedi qui",
+        "fullNameLabel": "Nome e Cognome",
+        "roleLabel": "Ruolo",
+        "roleCondominiumAdmin": "Amm.re Condominio",
+        "roleDelegatedTechnician": "Tecnico Delegato",
+        "vat11Numbers": "Obbligo 11 numeri",
+        "studioSection": "Studio",
+        "studioAddress": "Via, piazza.....",
+        "studioCity": "Città",
+        "studioProvince": "Provincia",
+        "onlyForDelegatedTechnicians": "SOLO PER TECNICI DELEGATI",
+        "orderCollege": "Ordine / Collegio",
+        "orderProvince": "Provincia",
+        "orderNumber": "Numero",
+        "mandatoryForRegistrationNote": "Sono dati obbligatori ai fini della registrazione in quanto solo gli amministratori di condominio e tecnici delegati possono registrarsi.",
+        "addSameMandatoryProfileData": "Aggiungere stessi dati obbligatori del profilo. Altrimenti completarli successivamente per rendere operativo il profilo.",
         "errors": {
             "passwordMatch": "Le password non corrispondono",
-            "passwordLength": "La password deve essere di almeno 6 caratteri",
+            "passwordLength": "La password deve essere di almeno 8 caratteri",
             "requiredFields": "Compila tutti i campi obbligatori",
+            "vat11Required": "La P.iva deve essere di 11 cifre.",
             "loginFailed": "Accesso fallito",
             "registrationFailed": "Registrazione fallita"
         }
@@ -70,9 +87,13 @@
             "title": "Dettagli Appalto",
             "editTitle": "Modifica Appalto",
             "editDetails": "Modifica Dettagli Appalto",
-            "clientName": "Nome Cliente",
+            "clientName": "Denominazione / Nome cliente",
+            "clientNamePlaceholder": "es. Cond. Diamante o Mario Rossi",
             "object": "Oggetto",
-            "address": "Indirizzo / Località",
+            "address": "Indirizzo",
+            "addressPlaceholder": "Via, piazza...",
+            "city": "Città",
+            "cityPlaceholder": "Città...",
             "deadline": "Scadenza Offerte",
             "estimatedAmount": "Importo Stimato",
             "uploadBoq": "Carica BOQ / Computo Metrico",
@@ -84,23 +105,24 @@
             "publish": "Pubblica Appalto",
             "publishing": "Pubblicazione...",
             "boq": {
-                "title": "Voci di Computo (BOQ)",
-                "description": "Aggiungi voci per la quotazione. Puoi inserire voci a prezzo unitario o a corpo.",
-                "tabs": {
-                    "ai": "Carica PDF (Estrazione AI)",
-                    "manual": "Inserimento Manuale"
-                },
+                "uploadLabel": "Carica computo metrico (pdf)",
+                "clientOnlyPdfNote": "Il committente può solo inserire il computo metrico redatto da un tecnico in formato PDF.",
+                "extractedItemsTitle": "Voci estratte",
                 "upload": {
-                    "click": "Clicca per caricare PDF",
-                    "format": "Formato supportato: PDF (max 10MB)",
+                    "click": "Clicca per caricare il computo metrico (PDF)",
+                    "format": "Solo file PDF (max 10MB)",
                     "processing": "Elaborazione..."
                 },
                 "extraction": {
-                    "complete": "Estrazione Completata!",
-                    "review": "Revisiona e modifica le voci estratte qui sotto.",
-                    "success": "Voci BOQ estratte con successo!",
-                    "error": "Estrazione AI fallita"
+                    "complete": "Caricamento completato",
+                    "review": "Le voci estratte sono visualizzate qui sotto.",
+                    "success": "Computo metrico caricato con successo.",
+                    "error": "Caricamento fallito"
                 },
+                "uploadedFile": "PDF caricato",
+                "openPdf": "Apri PDF",
+                "downloadPdf": "Scarica PDF",
+                "previewFallback": "Anteprima non disponibile. Usa Apri/Scarica PDF.",
                 "table": {
                     "description": "Descrizione",
                     "type": "Tipo",
@@ -109,8 +131,11 @@
                     "unitPrice": "Prezzo Unitario",
                     "lumpSum": "A Corpo"
                 },
-                "addItem": "Aggiungi Voce",
-                "noItems": "Nessuna voce aggiunta. Clicca \"Aggiungi Voce\" per iniziare."
+                "extractedCount": "{{count}} voce",
+                "extractedCount_other": "{{count}} voci",
+                "extractedItemsSaved": "{{count}} voci estratte dal PDF saranno associate all'appalto. Le imprese compileranno prezzi e quantità nella loro area.",
+                "noItems": "Carica un PDF per estrarre le voci del computo metrico.",
+                "remove": "Rimuovi"
             },
             "messages": {
                 "successCreate": "Appalto creato con successo!",
@@ -119,7 +144,8 @@
                 "errorLoad": "Impossibile caricare i dati dell'appalto.",
                 "errorSave": "Impossibile salvare l'appalto. Riprova.",
                 "errorPublish": "Impossibile pubblicare l'appalto. Riprova.",
-                "publishFirst": "Crea prima l'appalto per poterlo pubblicare."
+                "publishFirst": "Crea prima l'appalto per poterlo pubblicare.",
+                "boqRequired": "Carica un PDF di computo metrico per estrarre almeno una voce, oppure completa le voci dopo l'estrazione."
             }
         },
         "tendersList": {
@@ -220,14 +246,19 @@
             "loadError": "Impossibile caricare il profilo"
         },
         "profile": {
-            "title": "Profilo Amministratore",
-            "subtitle": "Gestisci i dettagli del tuo account amministratore.",
+            "title": "Profilo Committente",
+            "titleCondominiumAdmin": "Profilo Amm.re Condominio",
+            "titleDelegatedTechnician": "Profilo Tecnico Delegato",
+            "subtitle": "Gestisci i dettagli del tuo profilo.",
+            "subtitleCommittente": "Gestisci i dettagli del tuo profilo committente. Tutti i campi visibili sono obbligatori.",
+            "subtitleCondominiumAdmin": "Gestisci i dettagli del tuo profilo da amministratore di condominio. Tutti i campi visibili sono obbligatori.",
+            "subtitleDelegatedTechnician": "Gestisci i dettagli del tuo profilo da tecnico delegato. Tutti i campi visibili sono obbligatori.",
+            "completeAllRequired": "In \"Mio Profilo\" quest'area deve essere completata obbligatoriamente secondo il ruolo.",
+            "roleCommittenteOnly": "Committente (solo)",
             "personalInfo": "Informazioni Personali",
             "name": "Nome Completo",
             "email": "Indirizzo Email",
             "phone": "Numero di Telefono",
-            "city": "Città",
-            "company": "Azienda / Organizzazione",
             "saveChanges": "Salva Modifiche",
             "loadError": "Impossibile caricare i dati del profilo.",
             "updateSuccess": "Profilo aggiornato con successo!",
@@ -235,12 +266,33 @@
             "emailNote": "L'email non può essere modificata",
             "saving": "Salvataggio...",
             "cancel": "Annulla",
+            "condominiumProfileTitle": "Profilo Amm.re Condominio o Tecnico Delegato",
+            "fullNameLabel": "Nome e Cognome",
+            "roleLabel": "Ruolo",
+            "roleCondominiumAdmin": "Amm.re Condominio",
+            "roleDelegatedTechnician": "Tecnico Delegato",
+            "vatNumber": "P.iva",
+            "vatNote": "Obbligo 11 numeri",
+            "studioSection": "Studio",
             "placeholders": {
                 "name": "Inserisci il tuo nome",
                 "phone": "Inserisci il numero di telefono",
-                "city": "Inserisci la città",
-                "company": "Inserisci il nome dell'azienda"
-            }
+                "fullName": "Nome e cognome",
+                "selectRole": "Seleziona ruolo",
+                "vat": "11 cifre",
+                "studioAddress": "Via, piazza.....",
+                "studioCity": "città",
+                "studioProvince": "provincia"
+            },
+            "changePassword": "Modifica password",
+            "currentPassword": "Password attuale",
+            "newPassword": "Nuova password",
+            "confirmNewPassword": "Conferma nuova password",
+            "updatePassword": "Aggiorna password",
+            "passwordUpdated": "Password aggiornata con successo.",
+            "passwordUpdateError": "Impossibile aggiornare la password. Verifica la password attuale.",
+            "passwordMismatch": "Le nuove password non coincidono.",
+            "missingRequired": "Compila tutti i campi obbligatori del profilo committente: {{fields}}."
         },
         "documentManagement": {
             "title": "Gestione Documenti",
@@ -500,6 +552,7 @@
         "tenders": {
             "title": "Gare Attive",
             "subtitle": "Esplora e partecipa alle nuove opportunità di appalto.",
+            "browseTenders": "Sfoglia Gare",
             "searchPlaceholder": "Cerca gare...",
             "allLocations": "Tutte le località",
             "open": "Aperta",
@@ -523,9 +576,14 @@
             "minutes": "minuti",
             "expired": "Scaduta",
             "moreThan": "Più di",
+            "clientNameLabel": "Denominazione / Nome cliente",
+            "addressLabel": "Indirizzo",
+            "cityLabel": "Città",
             "description": "Descrizione",
             "estimatedBudget": "Budget Stimato",
             "boqTitle": "Computo Metrico (BOQ)",
+            "boqSectionTitle": "Computo metrico (pdf)",
+            "downloadComputoPdf": "Scarica computo PDF",
             "unit": "Unità",
             "quantity": "Quantità",
             "type": "Tipo",
@@ -537,6 +595,8 @@
             "smartAiScan": "Scansione AI Smart",
             "bidSubmitted": "Offerta Inviata",
             "totalAmount": "Importo Totale",
+            "subtotalAmount": "Subtotale",
+            "discountApplied": "Sconto applicato",
             "status": "Stato",
             "proposal": "Proposta / Lettera di Presentazione",
             "proposalPlaceholder": "Scrivi qui la tua proposta o lettera di presentazione...",
@@ -548,13 +608,24 @@
             "item": "Voce",
             "price": "Prezzo",
             "total": "Totale",
+            "notes": "Note",
+            "notesPlaceholder": "Note opzionali per questa voce",
+            "openPdf": "Apri PDF",
+            "downloadPdf": "Scarica PDF",
+            "uploadedFile": "PDF caricato",
+            "previewFallback": "Anteprima non disponibile. Usa Apri/Scarica PDF.",
             "backToBids": "Torna alle Mie Offerte",
             "addingDisabled": "L'aggiunta di nuove voci è disabilitata per questa gara",
             "totalBid": "Offerta Totale",
+            "totalOffer": "Offerta Totale",
             "exclVat": "(escl. IVA)",
-            "signQuote": "Firma Offerta (Disegna o Carica)",
+            "discountOptional": "Sconto (facoltativo):",
+            "signQuote": "Offerta firmata (Carica)",
+            "uploadSignedBoqNote": "Qui deve essere caricato l'intero computo compilato e firmato (PDF).",
+            "uploadSignedBoqPdf": "Carica computo compilato e firmato (PDF)",
+            "pdfOnlyHint": "Solo PDF",
+            "documentUploaded": "Documento caricato",
             "uploadPdf": "Carica PDF",
-            "drawSign": "Disegna Firma",
             "signHere": "Firma Qui",
             "clear": "Cancella",
             "useSignature": "Usa Firma",
@@ -567,6 +638,7 @@
             "receivedBids": "Offerte Ricevute",
             "liveMonitoring": "Monitoraggio in tempo reale delle offerte in arrivo",
             "waitingForBids": "In attesa di offerte...",
+            "bidsVisibleAtDeadline": "Le offerte ricevute saranno visibili alla scadenza",
             "view": "Vedi",
             "biddingUnavailable": "Offerta Non Disponibile",
             "contractorOnly": "Disponibile solo per le Imprese.",
@@ -617,7 +689,11 @@
             "loadError": "Impossibile caricare i dati del profilo.",
             "avatarError": "Impossibile caricare l'avatar. Dimensione massima 2MB.",
             "docError": "Impossibile caricare il documento. Dimensione massima 10MB.",
-            "saveError": "Impossibile salvare il profilo. Controlla i dati inseriti."
+            "saveError": "Impossibile salvare il profilo. Controlla i dati inseriti.",
+            "bio": "Presentazione / Bio",
+            "bioPlaceholder": "Breve descrizione dell'impresa",
+            "expertise": "Settori / Competenze",
+            "expertisePlaceholder": "es. Edilizia, Ristrutturazioni"
         }
     },
     "owner": {
@@ -625,9 +701,14 @@
             "platformManagement": "Gestione Piattaforma",
             "dashboard": "Dashboard",
             "userManagement": "Gestione Utenti",
+            "tenders": "Gestione Appalti",
             "revenue": "Entrate",
             "configuration": "Configurazione",
             "notifications": "Notifiche"
+        },
+        "notifications": {
+            "title": "Notifiche",
+            "subtitle": "Attività notifiche della piattaforma."
         },
         "configuration": {
             "title": "Configurazione di Sistema",
@@ -739,6 +820,7 @@
             "block": "Blocca",
             "activate": "Attiva",
             "viewProfile": "Vedi Profilo",
+            "confirmVerify": "Abilitare questa impresa a seguito di verifica?",
             "successVerify": "Utente verificato con successo",
             "successBlock": "Utente bloccato con successo",
             "successActivate": "Utente attivato con successo",
@@ -752,27 +834,49 @@
             "tabs": {
                 "all": "Tutti"
             }
+        },
+        "userProfile": {
+            "companyData": "Dati impresa",
+            "clientData": "Dati committente",
+            "documents": "Documenti",
+            "documentsVerification": "Documenti per la verifica",
+            "visuraCamerale": "Visura camerale",
+            "visuraCameraleRequired": "Visura camerale (obbligatoria)",
+            "visuraNotUploaded": "Non caricata – obbligatoria ai fini della verifica",
+            "optionalAttachments": "Allegati facoltativi",
+            "noOptionalAttachments": "Nessun allegato facoltativo",
+            "presentation": "Presentazione aziendale",
+            "viewDownload": "Visualizza / Scarica",
+            "verified": "Verificata",
+            "verifiedYes": "Sì",
+            "verifiedNo": "No"
         }
     },
     "notifications": {
+        "title": "Notifiche",
         "unreadCount": "Hai {{count}} notifiche non lette",
         "allCaughtUp": "Tutto letto!",
         "markAllRead": "Segna tutte come lette",
+        "viewAll": "Vedi tutte le notifiche",
         "emptyTitle": "Nessuna notifica",
-        "emptyDesc": "Sei in pari! Torna più tardi."
+        "emptyDesc": "Sei in pari! Torna più tardi.",
+        "emptyDropdown": "Nessuna notifica ancora.",
+        "newNotification": "Nuova notifica",
+        "markAsRead": "Segna come letta",
+        "new": "Nuove"
     },
     "landing": {
         "nav": {
             "signIn": "Accedi",
-            "getStarted": "Inizia Ora"
+            "getStarted": "Registrati"
         },
         "hero": {
-            "slogan": "Gestione intelligente delle costruzioni",
-            "title1": "Semplifica il tuo",
-            "title2": "Workflow Edile",
-            "desc": "La piattaforma all-in-one per gestire appalti, imprese e documenti in modo intelligente e veloce.",
-            "startProject": "Crea un Progetto",
-            "joinContractor": "Unisciti come Appaltatore"
+            "slogan": "Il metodo digitale per l’affidamento lavori",
+            "title1": "Gestisci gare d’appalto",
+            "title2": "in modo trasparente e professionale",
+            "desc": "Appalto Smart è un metodo, prima ancora che una piattaforma: computi metrici redatti da professionisti, confronto oggettivo delle offerte e tracciabilità completa di ogni fase di gara.",
+            "startProject": "Registrati e pubblica un appalto",
+            "joinContractor": "Registrati come Impresa"
         },
         "stats": {
             "projectValue": "Valore Progetti",
@@ -798,23 +902,82 @@
                 "payments": "Pagamenti sicuri e garantiti",
                 "dashboard": "Dashboard analitica avanzata"
             },
-            "cta": "Scopri i vantaggi"
+            "cta": "Scopri i vantaggi",
+            "statusLabel": "Aggiornamento stato",
+            "statusTitle": "Offerta accettata!",
+            "statusDesc": "La tua proposta per \"Ristrutturazione Villa Milano\" è stata approvata."
         },
         "how": {
-            "title": "Come Funziona",
-            "subtitle": "Tre semplici passaggi verso il successo digitale",
+            "title": "Come funziona",
+            "subtitle": "Un flusso chiaro per l’affidamento lavori",
             "step1": {
-                "title": "Esplora Gare",
-                "desc": "Trova i progetti perfetti per la tua specializzazione."
+                "title": "Pubblicazione gara",
+                "desc": "Carichi il computo metrico e i dettagli dell’intervento."
             },
             "step2": {
-                "title": "Invia Offerte",
-                "desc": "Sistema di quotazione semplice guidato dall'AI."
+                "title": "Raccolta offerte (15 giorni)",
+                "desc": "Le imprese partecipano compilando lo stesso computo metrico."
             },
             "step3": {
-                "title": "Gestisci e Vinci",
-                "desc": "Monitora i progressi e ricevi pagamenti veloci."
+                "title": "Confronto, aggiudicazione e formalizzazione",
+                "desc": "Visualizzi tutte le offerte in modo oggettivo, scegli l’impresa e carichi verbale o accettazione cliente."
             }
+        },
+        "flows": {
+            "title": "Due flussi, un unico metodo",
+            "subtitle": "Appalto Smart distingue chiaramente il percorso del Committente e quello dell’Impresa.",
+            "clientTitle": "Flusso Committente (Amministratore o Tecnico Delegato)",
+            "clientLabel": "Committente",
+            "clientIntro": "Gestisci gare per conto dei tuoi clienti o dei condomini con un processo strutturato e tracciabile.",
+            "clientSteps": {
+                "create": "Crei l’appalto inserendo titolo, descrizione, fascia economica stimata e caricando il computo metrico redatto dal professionista.",
+                "collect": "Per 15 giorni le imprese partecipano alla gara, ma le offerte restano riservate fino alla scadenza (nessuna visibilità anticipata).",
+                "view": "Alla scadenza visualizzi simultaneamente tutte le offerte e puoi scaricare i preventivi ricevuti per condividerli in assemblea o con il cliente.",
+                "awardAdmin": "Se sei Amministratore di Condominio carichi il verbale di assemblea con l’incarico all’impresa scelta.",
+                "awardTech": "Se sei Tecnico Delegato carichi il preventivo firmato per accettazione dal cliente."
+            },
+            "clientBenefitsTitle": "Vantaggi per il Committente",
+            "clientBenefits": {
+                "free": "Servizio gratuito per Amministratori e Tecnici.",
+                "noSearch": "Nessuna ricerca manuale delle imprese.",
+                "fromOffice": "Gestione completa dal proprio studio.",
+                "comparable": "Offerte comparabili voce per voce.",
+                "tracked": "Processo tracciato in ogni fase."
+            },
+            "contractorTitle": "Flusso Impresa Appaltatrice",
+            "contractorLabel": "Impresa Appaltatrice",
+            "contractorIntro": "Partecipa alle gare in modo professionale, lavorando sempre su computi metrici chiari.",
+            "contractorSteps": {
+                "signup": "Registrazione gratuita e compilazione del profilo aziendale.",
+                "browse": "Consultazione delle gare con informazioni su zona, tipologia intervento e fascia economica.",
+                "credits": "Partecipazione tramite crediti: il costo di accesso dipende dalla fascia dell’appalto.",
+                "offer": "Compili il computo metrico online inserendo i prezzi unitari e carichi il preventivo firmato.",
+                "win": "In caso di aggiudicazione si attiva la commissione percentuale calcolata sull’importo dell’appalto; solo dopo il pagamento viene regolarizzato l’appalto e rilasciato il Nulla Osta alla firma."
+            },
+            "contractorBenefitsTitle": "Vantaggi per l’Impresa",
+            "contractorBenefits": {
+                "opportunities": "Accesso a nuove opportunità di lavoro.",
+                "visibility": "Maggiore visibilità presso amministratori e tecnici.",
+                "clearDocs": "Lavori sempre su documentazione tecnica chiara.",
+                "noSubscription": "Nessun abbonamento obbligatorio.",
+                "payWhenParticipate": "Paghi solo se partecipi alla gara."
+            }
+        },
+        "security": {
+            "title": "Sicurezza e trasparenza",
+            "points": {
+                "visibility": "Le offerte sono visibili solo alla scadenza della gara.",
+                "tracked": "Ogni passaggio del processo è tracciato.",
+                "archived": "Documenti archiviati in modo ordinato e sempre disponibili.",
+                "fairAccess": "Parità di accesso alle imprese che partecipano."
+            }
+        },
+        "finalCta": {
+            "title": "Inizia oggi con Appalto Smart",
+            "subtitleAdmins": "Sei un Amministratore o un Tecnico Delegato? Pubblica gratuitamente il tuo primo appalto.",
+            "subtitleContractors": "Sei un’Impresa Appaltatrice? Registrati e scopri le gare disponibili.",
+            "btnClient": "Pubblica un appalto",
+            "btnContractor": "Registrati come Impresa"
         },
         "testimonials": {
             "title": "Cosa dicono di noi",
@@ -839,7 +1002,9 @@
             "contact": "Contatti",
             "legal": "Legale",
             "privacy": "Privacy Policy",
-            "terms": "Termini di Servizio"
+            "terms": "Termini di Servizio",
+            "country": "Italia",
+            "methodTag": "Metodo Digitale"
         }
     },
     "charts": {
@@ -859,6 +1024,7 @@
         "title": "Presenza Nazionale",
         "subtitle": "Gare attive e opportunità in tempo reale su tutto il territorio italiano.",
         "active_tenders_live": "Appalti Attivi",
+        "active_label": "attivi",
         "contractors_online": "Appaltatori Online",
         "region_north": "Nord Italia",
         "region_center": "Centro Italia",

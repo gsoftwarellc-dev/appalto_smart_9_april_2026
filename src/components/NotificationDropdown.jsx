@@ -1,14 +1,19 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNotifications } from '../context/NotificationContext';
+import { useAuth } from '../context/AuthContext';
 import { Button } from './ui/Button';
 import { Bell, Check, Clock, ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { formatDistanceToNow } from 'date-fns';
 
 const NotificationDropdown = () => {
+    const { user } = useAuth();
+    const { t } = useTranslation();
     const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef(null);
+    const notificationsPath = user?.role === 'admin' ? '/admin/notifications' : '/contractor/notifications';
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -47,13 +52,13 @@ const NotificationDropdown = () => {
             {isOpen && (
                 <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-2xl border border-gray-100 z-50 overflow-hidden transform transition-all">
                     <div className="p-4 border-b border-gray-50 flex justify-between items-center bg-gray-50/50">
-                        <h3 className="font-bold text-gray-900">Notifications</h3>
+                        <h3 className="font-bold text-gray-900">{t('notifications.title')}</h3>
                         {unreadCount > 0 && (
                             <button
                                 onClick={handleMarkAll}
                                 className="text-xs text-blue-600 hover:text-blue-800 font-medium"
                             >
-                                Mark all as read
+                                {t('notifications.markAllRead')}
                             </button>
                         )}
                     </div>
@@ -70,7 +75,7 @@ const NotificationDropdown = () => {
                                             <div className={`h-2 w-2 mt-2 rounded-full shrink-0 ${!n.read_at ? 'bg-blue-600' : 'bg-transparent'}`} />
                                             <div className="flex-1 min-w-0">
                                                 <p className={`text-sm text-gray-800 leading-snug ${!n.read_at ? 'font-semibold' : ''}`}>
-                                                    {n.data?.message || 'New notification'}
+                                                    {(n.data && (n.data.message || n.data.title)) || t('notifications.newNotification')}
                                                 </p>
                                                 <div className="flex items-center gap-2 mt-1.5 text-[10px] text-gray-400">
                                                     <Clock className="h-3 w-3" />
@@ -81,7 +86,7 @@ const NotificationDropdown = () => {
                                                 <button
                                                     onClick={(e) => handleMarkItem(e, n.id)}
                                                     className="opacity-0 group-hover:opacity-100 p-1 rounded-full hover:bg-blue-100 text-blue-600 transition-all"
-                                                    title="Mark as read"
+                                                    title={t('notifications.markAsRead')}
                                                 >
                                                     <Check className="h-3.5 w-3.5" />
                                                 </button>
@@ -93,18 +98,18 @@ const NotificationDropdown = () => {
                         ) : (
                             <div className="p-8 text-center">
                                 <Bell className="h-8 w-8 text-gray-200 mx-auto mb-2" />
-                                <p className="text-sm text-gray-500">No notifications yet.</p>
+                                <p className="text-sm text-gray-500">{t('notifications.emptyDropdown')}</p>
                             </div>
                         )}
                     </div>
 
                     <div className="p-3 border-t border-gray-50 text-center bg-gray-50/30">
                         <Link
-                            to="/contractor/notifications"
+                            to={notificationsPath}
                             className="text-xs text-gray-600 hover:text-blue-600 font-medium inline-flex items-center gap-1"
                             onClick={() => setIsOpen(false)}
                         >
-                            View all notifications <ExternalLink className="h-3 w-3" />
+                            {t('notifications.viewAll')} <ExternalLink className="h-3 w-3" />
                         </Link>
                     </div>
                 </div>

@@ -104,11 +104,19 @@ const Dashboard = () => {
 
     const formatBudget = (val) => {
         if (!val) return 'N/A';
-        if (val === '0-50000') return '€0 - 50k';
-        if (val === '50000-100000') return '€50k - 100k';
-        if (val === '100000-250000') return '€100k - 250k';
-        if (val === '250000+') return '> €250k';
-        return !isNaN(val) ? `€${parseInt(val).toLocaleString()}` : val;
+        const str = String(val).trim();
+        if (str === '0-50000') return '€0 – €50.000';
+        if (str === '50000-100000') return '€50.000 – €100.000';
+        if (str === '100000-250000') return '€100.000 – €250.000';
+        if (str === '250000+') return `${t('contractor.tenders.moreThan')} €250.000`;
+        const num = parseFloat(str);
+        if (!Number.isNaN(num)) {
+            if (num <= 50000) return '€0 – €50.000';
+            if (num <= 100000) return '€50.000 – €100.000';
+            if (num <= 250000) return '€100.000 – €250.000';
+            return `${t('contractor.tenders.moreThan')} €250.000`;
+        }
+        return val;
     };
 
     if (loading) return (

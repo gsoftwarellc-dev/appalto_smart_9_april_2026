@@ -53,6 +53,14 @@ const BackendApiService = {
         return data.data;
     },
 
+    async changePassword(currentPassword, newPassword) {
+        await apiClient.put('/profile/password', {
+            current_password: currentPassword,
+            password: newPassword,
+            password_confirmation: newPassword,
+        });
+    },
+
     async uploadAvatar(file) {
         console.log("Uploading avatar (converting to base64 for crash prevention):", file);
         return new Promise((resolve, reject) => {
@@ -145,7 +153,8 @@ const BackendApiService = {
 
     async getTenderBids(tenderId) {
         const { data } = await apiClient.get(`/tenders/${tenderId}/bids`);
-        return data.data || [];
+        const list = data?.data ?? data;
+        return Array.isArray(list) ? list : [];
     },
 
     async getBid(bidId) {
@@ -158,14 +167,27 @@ const BackendApiService = {
         return data.data || [];
     },
 
-    async createOrUpdateBid(tenderId, bidItems, offerFileData = null, proposalText = '') {
-        const payload = { items: bidItems };
+    async createOrUpdateBid(
+        tenderId,
+        bidItems,
+        offerFileData = null,
+        proposalText = '',
+        discountType = null,
+        discountValue = 0
+    ) {
+        const payload = {
+            items: bidItems,
+            discount_type: discountType,
+            discount_value: discountValue,
+        };
         if (offerFileData) {
             payload.offer_file_base64 = offerFileData.base64;
             payload.offer_file_name = offerFileData.name;
         }
         if (proposalText) {
             payload.proposal = proposalText;
+        } else {
+            payload.proposal = '';
         }
         const { data } = await apiClient.post(`/tenders/${tenderId}/bids`, payload);
         return data.data;
@@ -234,14 +256,14 @@ const BackendApiService = {
     async extractPdf(tenderId, file, type = 'standard') {
         const formData = new FormData();
         formData.append('pdf_file', file);
+        formData.append('file', file); // some hosts/proxies prefer generic "file" name
         formData.append('extraction_type', type);
 
         const url = tenderId ? `/tenders/${tenderId}/extract-pdf` : '/extract-pdf';
 
+        // Do not set Content-Type so browser sets multipart/form-data with boundary (required for file uploads)
         const { data } = await apiClient.post(url, formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
+            headers: { 'Content-Type': false },
         });
         return data; // returns { extraction_id, ... }
     },

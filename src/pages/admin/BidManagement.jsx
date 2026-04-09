@@ -8,6 +8,7 @@ import { Badge } from '../../components/ui/Badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/Table';
 import { Search, FileCheck, ChevronRight, ArrowLeft, Download, Eye, Loader2 } from 'lucide-react';
 import BackendApiService from '../../services/backendApi';
+import { formatEuro } from '../../utils/currency';
 
 const BidManagement = () => {
     const navigate = useNavigate();
@@ -245,7 +246,7 @@ const BidManagement = () => {
                                 {bids.map((bid) => (
                                     <TableRow key={bid.id}>
                                         <TableCell className="font-medium">{bid.contractor?.name || bid.contractor_name}</TableCell>
-                                        <TableCell className="font-semibold text-gray-900">€{parseFloat(bid.total_amount || 0).toLocaleString()}</TableCell>
+                                        <TableCell className="font-semibold text-gray-900">{formatEuro(bid.total_amount || 0)}</TableCell>
                                         <TableCell>{new Date(bid.created_at || bid.date).toLocaleDateString()}</TableCell>
                                         <TableCell>
                                             <Badge className={getStatusColor(bid.status)}>

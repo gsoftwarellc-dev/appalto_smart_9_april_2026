@@ -7,10 +7,12 @@ import { Badge } from '../../components/ui/Badge';
 import { Input } from '../../components/ui/Input';
 import { Search, Loader2, Eye, Edit, FileText, MapPin, Calendar, Euro } from 'lucide-react';
 import BackendApiService from '../../services/backendApi';
+import { useAuth } from '../../context/AuthContext';
 
 const TendersList = () => {
     const { t } = useTranslation();
     const navigate = useNavigate();
+    const { user } = useAuth();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [tenders, setTenders] = useState([]);
@@ -51,6 +53,24 @@ const TendersList = () => {
             case 'closed': return t('admin.tendersList.statusClosed');
             default: return status;
         }
+    };
+
+    const formatBudgetRange = (value) => {
+        if (value === undefined || value === null || value === '') return 'N/A';
+        const str = String(value).trim();
+        if (str === '0-50000') return '€0 – €50.000';
+        if (str === '50000-100000') return '€50.000 – €100.000';
+        if (str === '100000-250000') return '€100.000 – €250.000';
+        if (str === '250000+') return `${t('contractor.tenders.moreThan')} €250.000`;
+
+        const num = parseFloat(value);
+        if (!isNaN(num)) {
+            if (num <= 50000) return '€0 – €50.000';
+            if (num <= 100000) return '€50.000 – €100.000';
+            if (num <= 250000) return '€100.000 – €250.000';
+            return `${t('contractor.tenders.moreThan')} €250.000`;
+        }
+        return value;
     };
 
     const filteredTenders = tenders.filter(tender => {
@@ -113,11 +133,14 @@ const TendersList = () => {
 
             {/* Tenders Grid */}
             <div className="grid gap-6">
-                {filteredTenders.map((tender) => (
+                {filteredTenders.map((tender) => {
+                    const basePath = user?.role === 'owner' ? '/owner' : '/admin';
+                    const canEdit = user?.role === 'admin' && tender.status === 'draft';
+                    return (
                     <Card
                         key={tender.id}
                         className="relative group hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-blue-200 overflow-hidden bg-white ring-1 ring-gray-50/50 cursor-pointer"
-                        onClick={() => navigate(`/admin/tenders/${tender.id}`)}
+                        onClick={() => navigate(`${basePath}/tenders/${tender.id}`)}
                     >
                         <div className="absolute top-0 left-0 w-1 h-full bg-blue-500 transform -translate-x-full group-hover:translate-x-0 transition-transform duration-300" />
                         <CardContent className="p-6">
@@ -164,7 +187,9 @@ const TendersList = () => {
                                         {tender.budget && (
                                             <div className="flex items-center gap-2 text-gray-500 bg-gray-50 px-3 py-1.5 rounded-md hover:bg-gray-100 transition-colors">
                                                 <Euro className="h-4 w-4 text-green-600" />
-                                                <span className="font-medium text-gray-900 tracking-tight text-base">{parseFloat(tender.budget).toLocaleString()}</span>
+                                                <span className="font-medium text-gray-900 tracking-tight text-base">
+                                                    {formatBudgetRange(tender.budget)}
+                                                </span>
                                             </div>
                                         )}
                                         <div className="flex items-center gap-2 text-gray-500 bg-gray-50 px-3 py-1.5 rounded-md hover:bg-gray-100 transition-colors ml-auto md:ml-0">
@@ -175,12 +200,18 @@ const TendersList = () => {
                                 </div>
 
                                 <div className="flex md:flex-col gap-3 w-full md:w-auto shrink-0 min-w-[140px]">
-                                    <Button className="w-full bg-white text-blue-600 border border-blue-200 hover:bg-blue-600 hover:text-white hover:border-blue-600 shadow-sm transition-all duration-300 font-medium group/btn h-10">
+                                    <Button
+                                        className="w-full bg-white text-blue-600 border border-blue-200 hover:bg-blue-600 hover:text-white hover:border-blue-600 shadow-sm transition-all duration-300 font-medium group/btn h-10"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            navigate(`${basePath}/tenders/${tender.id}`);
+                                        }}
+                                    >
                                         {t('admin.list.view')}
                                         <Eye className="ml-2 h-4 w-4 transition-transform group-hover/btn:scale-110" />
                                     </Button>
 
-                                    {tender.status === 'draft' && (
+                                    {canEdit && (
                                         <Link
                                             to={`/admin/edit-tender/${tender.id}`}
                                             className="block"
@@ -196,7 +227,7 @@ const TendersList = () => {
                             </div>
                         </CardContent>
                     </Card>
-                ))}
+                )})}
             </div>
 
             {filteredTenders.length === 0 && (

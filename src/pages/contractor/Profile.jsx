@@ -5,10 +5,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../..
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Badge } from '../../components/ui/Badge';
-import { User, MapPin, Mail, Eye, X, CheckCircle, Star, Loader2, AlertCircle, FileText, Upload } from 'lucide-react';
+import { User, MapPin, Mail, Eye, X, CheckCircle, Star, Loader2, AlertCircle, FileText, Upload, Lock } from 'lucide-react';
 import BackendApiService from '../../services/backendApi';
 
-const BACKEND_URL = 'http://localhost:8000';
+const getBackendBaseUrl = () => {
+    const api = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+    return api.replace(/\/api\/?$/, '') || 'http://localhost:8000';
+};
 
 const Profile = () => {
     const { t } = useTranslation();
@@ -18,6 +21,12 @@ const Profile = () => {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState(null);
+
+    // Password change
+    const [passwordForm, setPasswordForm] = useState({ current: '', new: '', confirm: '' });
+    const [changingPassword, setChangingPassword] = useState(false);
+    const [passwordSuccess, setPasswordSuccess] = useState(null);
+    const [passwordError, setPasswordError] = useState(null);
 
     // Profile Data State
     const [profile, setProfile] = useState({
@@ -129,13 +138,38 @@ const Profile = () => {
         }
     };
 
+    const handleChangePassword = async (e) => {
+        e.preventDefault();
+        setPasswordError(null);
+        setPasswordSuccess(null);
+        if (passwordForm.new !== passwordForm.confirm) {
+            setPasswordError(t('admin.profile.passwordMismatch'));
+            return;
+        }
+        if (passwordForm.new.length < 8) {
+            setPasswordError(t('auth.errors.passwordLength'));
+            return;
+        }
+        try {
+            setChangingPassword(true);
+            await BackendApiService.changePassword(passwordForm.current, passwordForm.new);
+            setPasswordSuccess(t('admin.profile.passwordUpdated'));
+            setPasswordForm({ current: '', new: '', confirm: '' });
+            setTimeout(() => setPasswordSuccess(null), 3000);
+        } catch (err) {
+            setPasswordError(err.response?.data?.message || t('admin.profile.passwordUpdateError'));
+        } finally {
+            setChangingPassword(false);
+        }
+    };
+
     const getDocument = (type) => {
         return profile.documents?.find(d => d.document_type === type);
     };
 
     const getAvatarSrc = (url) => {
         if (!url) return null;
-        return url.startsWith('http') || url.startsWith('data:') ? url : `${BACKEND_URL}${url}`;
+        return url.startsWith('http') || url.startsWith('data:') ? url : `${getBackendBaseUrl()}${url.startsWith('/') ? '' : '/'}${url}`;
     };
 
     if (loading) return <div className="p-8 text-center flex justify-center"><Loader2 className="h-8 w-8 animate-spin text-blue-600" /></div>;
@@ -384,7 +418,7 @@ const Profile = () => {
                                                     {getDocument('visura_camerale').file_name}
                                                 </p>
                                                 <a
-                                                    href={`${BACKEND_URL}/storage/${getDocument('visura_camerale').file_path}`}
+                                                    href={`${getBackendBaseUrl()}/storage/${getDocument('visura_camerale').file_path}`}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="text-xs text-blue-600 hover:underline flex items-center mt-0.5"
@@ -428,7 +462,7 @@ const Profile = () => {
                                                     {getDocument('presentation').file_name}
                                                 </p>
                                                 <a
-                                                    href={`${BACKEND_URL}/storage/${getDocument('presentation').file_path}`}
+                                                    href={`${getBackendBaseUrl()}/storage/${getDocument('presentation').file_path}`}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="text-xs text-blue-600 hover:underline flex items-center mt-0.5"
@@ -457,6 +491,57 @@ const Profile = () => {
                                     </div>
                                 )}
                             </div>
+                        </div>
+
+                        {/* Change password - same column as Details */}
+                        <div className="border-t border-gray-100 pt-6 space-y-4">
+                            <h3 className="font-bold text-gray-900 text-base flex items-center gap-2">
+                                <Lock className="h-5 w-5" />
+                                {t('admin.profile.changePassword')}
+                            </h3>
+                            <form onSubmit={handleChangePassword} className="space-y-4 max-w-md">
+                                {passwordError && (
+                                    <div className="p-2 text-sm text-red-700 bg-red-50 rounded border border-red-200">{passwordError}</div>
+                                )}
+                                {passwordSuccess && (
+                                    <div className="p-2 text-sm text-green-700 bg-green-50 rounded border border-green-200">{passwordSuccess}</div>
+                                )}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('admin.profile.currentPassword')}</label>
+                                    <Input
+                                        type="password"
+                                        value={passwordForm.current}
+                                        onChange={(e) => setPasswordForm(p => ({ ...p, current: e.target.value }))}
+                                        placeholder="••••••••"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('admin.profile.newPassword')}</label>
+                                    <Input
+                                        type="password"
+                                        value={passwordForm.new}
+                                        onChange={(e) => setPasswordForm(p => ({ ...p, new: e.target.value }))}
+                                        placeholder="••••••••"
+                                        minLength={8}
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('admin.profile.confirmNewPassword')}</label>
+                                    <Input
+                                        type="password"
+                                        value={passwordForm.confirm}
+                                        onChange={(e) => setPasswordForm(p => ({ ...p, confirm: e.target.value }))}
+                                        placeholder="••••••••"
+                                        required
+                                    />
+                                </div>
+                                <Button type="submit" disabled={changingPassword}>
+                                    {changingPassword ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                                    {t('admin.profile.updatePassword')}
+                                </Button>
+                            </form>
                         </div>
 
                     </CardContent>

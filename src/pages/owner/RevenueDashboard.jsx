@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { DollarSign, TrendingUp, CreditCard, Activity, ArrowUpRight, ArrowDownRight, Loader2 } from 'lucide-react';
+import { formatEuro } from '../../utils/currency';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import api from '../../services/backendApi';
 import StripeConfigModal from './components/StripeConfigModal'; // Import the new modal
@@ -82,7 +83,7 @@ const RevenueDashboard = ({ embedded = false }) => {
                             <DollarSign className="h-4 w-4 text-green-600" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">€{typeof stats.total_revenue === 'number' ? stats.total_revenue.toFixed(2) : stats.total_revenue}</div>
+                            <div className="text-2xl font-bold">{formatEuro(stats.total_revenue || 0)}</div>
                             <div className="flex items-center text-xs text-green-600 mt-1">
                                 <ArrowUpRight className="h-3 w-3 mr-1" /> +0.0% {t('owner.revenue.lastYear')}
                             </div>
@@ -95,7 +96,7 @@ const RevenueDashboard = ({ embedded = false }) => {
                         <CreditCard className="h-4 w-4 text-blue-600" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">€{typeof stats.credit_sales === 'number' ? stats.credit_sales.toFixed(2) : stats.credit_sales}</div>
+                        <div className="text-2xl font-bold">{formatEuro(stats.credit_sales || 0)}</div>
                         <div className="flex items-center text-xs text-green-600 mt-1">
                             <ArrowUpRight className="h-3 w-3 mr-1" /> +0.0% {t('owner.dashboard.lastMonth')}
                         </div>
@@ -107,7 +108,7 @@ const RevenueDashboard = ({ embedded = false }) => {
                         <TrendingUp className="h-4 w-4 text-purple-600" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">€{typeof stats.success_fees === 'number' ? stats.success_fees.toFixed(2) : stats.success_fees}</div>
+                        <div className="text-2xl font-bold">{formatEuro(stats.success_fees || 0)}</div>
                         <div className="flex items-center text-xs text-green-600 mt-1">
                             <ArrowUpRight className="h-3 w-3 mr-1" /> +0.0% {t('owner.dashboard.lastMonth')}
                         </div>
@@ -155,7 +156,7 @@ const RevenueDashboard = ({ embedded = false }) => {
                                     outerRadius={100}
                                     paddingAngle={5}
                                     dataKey="value"
-                                    label={({ name, value }) => `${name}: €${value.toFixed(2)}`}
+                                    label={({ name, value }) => `${name}: ${formatEuro(value)}`}
                                 >
                                     {[
                                         { name: t('owner.revenue.totalRevenueYtd'), value: parseFloat(stats.total_revenue) || 0, color: '#10b981' },
@@ -165,7 +166,7 @@ const RevenueDashboard = ({ embedded = false }) => {
                                         <Cell key={`cell-${index}`} fill={entry.color} />
                                     ))}
                                 </Pie>
-                                <Tooltip formatter={(value) => `€${value.toFixed(2)}`} />
+                                <Tooltip formatter={(value) => formatEuro(value)} />
                                 <Legend />
                             </PieChart>
                         </ResponsiveContainer>
@@ -197,7 +198,7 @@ const RevenueDashboard = ({ embedded = false }) => {
                                         </div>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-sm font-bold text-gray-900">{txn.amount}</p>
+                                        <p className="text-sm font-bold text-gray-900">{formatEuro(txn.amount || 0)}</p>
                                         <p className={`text-xs ${txn.status === 'Completed' ? 'text-green-600' : 'text-amber-600'
                                             }`}>{txn.status}</p>
                                     </div>

@@ -103,6 +103,19 @@ const UserManagement = () => {
         return 'destructive';
     };
 
+    const getAdminSubRoleLabel = (adminSubRole) => {
+        if (adminSubRole === 'condominium_admin') return t('auth.roleCondominiumAdmin');
+        if (adminSubRole === 'delegated_technician') return t('auth.roleDelegatedTechnician');
+        return t('admin.profile.roleCommittenteOnly');
+    };
+
+    const getUserTypeLabel = (user) => {
+        if (user.role === 'admin') return getAdminSubRoleLabel(user.admin_sub_role);
+        if (user.role === 'contractor') return user.company_name || t('auth.contractor');
+        if (user.role === 'owner') return t('auth.owner');
+        return t('common.na');
+    };
+
     return (
         <div className="space-y-6">
             <div className="flex flex-col gap-2">
@@ -220,13 +233,13 @@ const UserManagement = () => {
                                         <TableRow key={user.id}>
                                             <TableCell className="font-medium">
                                                 <div className="flex items-center gap-2">
-                                                    {activeTab === 'contractors' && !user.verified && (
+                                                    {user.role === 'contractor' && !user.verified && (
                                                         <AlertTriangle className="h-4 w-4 text-amber-500" title={t('owner.users.statusValues.pending')} />
                                                     )}
                                                     {user.name}
                                                 </div>
                                             </TableCell>
-                                            <TableCell>{user.company_name || (user.role === 'admin' ? t('auth.admin') : user.role === 'contractor' ? t('auth.contractor') : t('auth.owner')) || t('common.na')}</TableCell>
+                                            <TableCell>{getUserTypeLabel(user)}</TableCell>
                                             <TableCell>{user.email}</TableCell>
                                             <TableCell>
                                                 <Badge variant={getStatusVariant(status)}>
@@ -238,7 +251,7 @@ const UserManagement = () => {
                                                 <Button size="sm" variant="ghost" className="text-blue-600 hover:bg-blue-50" onClick={() => navigate(`/owner/users/${user.id}`)}>
                                                     <Eye className="h-4 w-4 mr-1" /> {t('owner.users.viewProfile')}
                                                 </Button>
-                                                {activeTab === 'contractors' && !user.verified && (
+                                                {(user.role === 'contractor' && !user.verified) && (
                                                     <Button size="sm" variant="outline" className="text-green-600 hover:bg-green-50" onClick={() => handleAction(user.id, 'verify')}>
                                                         <CheckCircle className="h-4 w-4 mr-1" /> {t('owner.users.verify')}
                                                     </Button>

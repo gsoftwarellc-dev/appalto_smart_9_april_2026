@@ -29,10 +29,11 @@ export const AuthProvider = ({ children }) => {
             return { success: true };
         } catch (error) {
             console.error('Login error:', error);
-            return {
-                success: false,
-                message: error.response?.data?.message || error.message || 'Login failed'
-            };
+            const isNetworkError = !error.response && (error.message === 'Network Error' || error.code === 'ERR_NETWORK');
+            const message = isNetworkError
+                ? 'Cannot reach server. Make sure the backend is running (npm run dev in appalto-backend, or php artisan serve on port 8000).'
+                : (error.response?.data?.message || error.message || 'Login failed');
+            return { success: false, message };
         }
     };
 

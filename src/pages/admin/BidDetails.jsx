@@ -8,6 +8,7 @@ import { Badge } from '../../components/ui/Badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/Table';
 import { ArrowLeft, Download, CheckCircle, XCircle, Loader2, Calendar, MapPin, Building, FileText, User } from 'lucide-react';
 import BackendApiService from '../../services/backendApi';
+import { formatEuro } from '../../utils/currency';
 
 const BidDetails = () => {
     const { id } = useParams();
@@ -148,10 +149,10 @@ const BidDetails = () => {
                                                 {item.quantity}
                                             </TableCell>
                                             <TableCell className="text-right font-mono text-gray-600">
-                                                €{parseFloat(item.unit_price).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                                {formatEuro(item.unit_price)}
                                             </TableCell>
                                             <TableCell className="text-right font-bold text-gray-900">
-                                                €{(item.quantity * item.unit_price).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                                {formatEuro(item.quantity * item.unit_price)}
                                             </TableCell>
                                         </TableRow>
                                     ))}
@@ -165,7 +166,7 @@ const BidDetails = () => {
                                     <TableRow className="bg-gray-50 font-bold border-t-2 border-gray-200">
                                         <TableCell colSpan={3} className="text-right">{t('admin.bidDetails.table.grandTotal')}:</TableCell>
                                         <TableCell className="text-right text-lg text-blue-700">
-                                            €{parseFloat(bid.total_amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                            {formatEuro(bid.total_amount)}
                                         </TableCell>
                                     </TableRow>
                                 </TableBody>

@@ -21,6 +21,45 @@ const useDebounceValue = (value, delay) => {
     return debouncedValue;
 };
 
+const ITALIAN_PROVINCES = [
+    'Agrigento', 'Alessandria', 'Ancona', 'Aosta', 'Arezzo', 'Ascoli Piceno', 'Asti', 'Avellino',
+    'Bari', 'Barletta-Andria-Trani', 'Belluno', 'Benevento', 'Bergamo', 'Biella', 'Bologna',
+    'Bolzano', 'Brescia', 'Brindisi', 'Cagliari', 'Caltanissetta', 'Campobasso', 'Caserta',
+    'Catania', 'Catanzaro', 'Chieti', 'Como', 'Cosenza', 'Cremona', 'Crotone', 'Cuneo',
+    'Enna', 'Fermo', 'Ferrara', 'Firenze', 'Foggia', 'Forlì-Cesena', 'Frosinone',
+    'Genova', 'Gorizia', 'Grosseto',
+    'Imperia', 'Isernia',
+    'La Spezia', 'L Aquila', 'Latina', 'Lecce', 'Lecco', 'Livorno', 'Lodi', 'Lucca',
+    'Macerata', 'Mantova', 'Massa-Carrara', 'Matera', 'Messina', 'Milano', 'Modena', 'Monza e Brianza',
+    'Napoli', 'Novara',
+    'Nuoro', 'Oristano',
+    'Padova', 'Palermo', 'Parma', 'Pavia', 'Perugia', 'Pesaro e Urbino', 'Pescara', 'Piacenza',
+    'Pisa', 'Pistoia', 'Pordenone', 'Potenza', 'Prato',
+    'Ragusa', 'Ravenna', 'Reggio Calabria', 'Reggio Emilia', 'Rieti', 'Rimini', 'Roma', 'Rovigo',
+    'Salerno', 'Sassari', 'Savona', 'Siena', 'Siracusa', 'Sondrio', 'Sud Sardegna',
+    'Taranto', 'Teramo', 'Terni', 'Torino', 'Trapani', 'Trento', 'Treviso', 'Trieste',
+    'Udine',
+    'Varese', 'Venezia', 'Verbano-Cusio-Ossola', 'Vercelli', 'Verona', 'Vibo Valentia', 'Vicenza', 'Viterbo',
+];
+
+const formatBudgetRange = (value, t) => {
+    if (value === undefined || value === null || value === '') return 'N/A';
+    const str = String(value).trim();
+    if (str === '0-50000') return '€0 – €50.000';
+    if (str === '50000-100000') return '€50.000 – €100.000';
+    if (str === '100000-250000') return '€100.000 – €250.000';
+    if (str === '250000+') return `${t('contractor.tenders.moreThan')} €250.000`;
+
+    const num = parseFloat(value);
+    if (!Number.isNaN(num)) {
+        if (num <= 50000) return '€0 – €50.000';
+        if (num <= 100000) return '€50.000 – €100.000';
+        if (num <= 250000) return '€100.000 – €250.000';
+        return `${t('contractor.tenders.moreThan')} €250.000`;
+    }
+    return value;
+};
+
 const ActiveTenders = () => {
     const { t } = useTranslation();
     const navigate = useNavigate();
@@ -72,6 +111,8 @@ const ActiveTenders = () => {
                 t.id === tender.id ? { ...t, isUnlocked: true } : t
             ));
             alert(t('contractor.tenders.unlockSuccess'));
+            // After successful unlock, take user directly to tender details
+            navigate(`/contractor/tenders/${tender.id}`);
         } catch (err) {
             console.error("Failed to unlock tender", err);
             if (err.response && err.response.status === 402) {
@@ -90,8 +131,7 @@ const ActiveTenders = () => {
 
     const hasActiveFilters = searchTerm !== '' || locationFilter !== 'All' || statusFilter !== 'All';
 
-    // Cities hardcoded for now or we can make it an input
-    const availableLocations = ['All', 'Rome', 'Milan', 'Naples', 'Turin'];
+    const availableLocations = ['All', ...ITALIAN_PROVINCES];
 
     const statuses = ['All', 'Open', 'Urgent'];
 
@@ -237,7 +277,7 @@ const ActiveTenders = () => {
                                             </div>
                                             <div className="flex items-center gap-1.5 text-sm text-gray-900 bg-green-50 px-3 py-1.5 rounded-full border border-green-100 group-hover:bg-green-100 transition-all">
                                                 <span className="text-green-600 font-bold">€</span>
-                                                <span className="font-bold">{tender.budget}</span>
+                                                <span className="font-bold">{formatBudgetRange(tender.budget, t)}</span>
                                             </div>
                                         </div>
                                     </div>

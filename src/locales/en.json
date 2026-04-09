@@ -30,8 +30,8 @@
         "submit": "Submit",
         "selectRole": "Select Role",
         "accountType": "Account Type",
-        "admin": "Client / Admin",
-        "contractor": "Contractor / Company",
+        "admin": "Client (Condominium Admin / Delegated Technician)",
+        "contractor": "Contracting Company",
         "owner": "Owner",
         "noAccount": "Don't have an account?",
         "haveAccount": "Already have an account?",
@@ -53,13 +53,30 @@
         "city": "City",
         "province": "Province",
         "legalRepresentative": "Legal Representative",
+        "fiscalCodeLegalRep": "Fiscal Code (Legal Representative)",
         "companyInfo": "Company Information",
         "registerHere": "Register here",
         "loginHere": "Login here",
+        "fullNameLabel": "First and Last Name",
+        "roleLabel": "Role",
+        "roleCondominiumAdmin": "Condominium Administrator",
+        "roleDelegatedTechnician": "Delegated Technician",
+        "vat11Numbers": "11 digits required",
+        "studioSection": "Studio / Office",
+        "studioAddress": "Street, square.....",
+        "studioCity": "City",
+        "studioProvince": "Province",
+        "onlyForDelegatedTechnicians": "ONLY FOR DELEGATED TECHNICIANS",
+        "orderCollege": "Order / College",
+        "orderProvince": "Province",
+        "orderNumber": "Number",
+        "mandatoryForRegistrationNote": "These data are mandatory for registration as only condominium administrators and delegated technicians can register.",
+        "addSameMandatoryProfileData": "Add the same mandatory profile data. Otherwise complete them later to make the profile operational.",
         "errors": {
             "passwordMatch": "Passwords do not match",
-            "passwordLength": "Password must be at least 6 characters",
+            "passwordLength": "Password must be at least 8 characters",
             "requiredFields": "Please fill in all required fields",
+            "vat11Required": "P.iva must be exactly 11 digits.",
             "loginFailed": "Login failed",
             "registrationFailed": "Registration failed"
         }
@@ -85,6 +102,71 @@
             "title": "Title",
             "status": "Status",
             "bids": "Bids"
+        },
+        "create": {
+            "title": "Tender Details",
+            "editTitle": "Edit Tender",
+            "editDetails": "Edit Tender Details",
+            "clientName": "Client name",
+            "clientNamePlaceholder": "e.g. Cond. Diamante or Mario Rossi",
+            "object": "Subject",
+            "address": "Address",
+            "addressPlaceholder": "Street, square...",
+            "city": "City",
+            "cityPlaceholder": "City...",
+            "deadline": "Offer deadline",
+            "estimatedAmount": "Estimated amount",
+            "uploadBoq": "Upload BOQ / Bill of quantities",
+            "submit": "Create Tender",
+            "creating": "Creating...",
+            "cancel": "Cancel",
+            "update": "Update Tender",
+            "updating": "Updating...",
+            "publish": "Publish Tender",
+            "publishing": "Publishing...",
+            "boq": {
+                "uploadLabel": "Carica computo metrico (pdf)",
+                "clientOnlyPdfNote": "The client may only upload the bill of quantities drafted by a technician in PDF format.",
+                "extractedItemsTitle": "Extracted items",
+                "upload": {
+                    "click": "Click to upload bill of quantities (PDF)",
+                    "format": "PDF only (max 10MB)",
+                    "processing": "Processing..."
+                },
+                "extraction": {
+                    "complete": "Upload complete",
+                    "review": "Extracted items are shown below.",
+                    "success": "Bill of quantities uploaded successfully.",
+                    "error": "Upload failed"
+                },
+                "uploadedFile": "Uploaded PDF",
+                "openPdf": "Open PDF",
+                "downloadPdf": "Download PDF",
+                "previewFallback": "Preview not available. Use Open/Download PDF.",
+                "table": {
+                    "description": "Description",
+                    "type": "Type",
+                    "unit": "Unit",
+                    "qty": "Qty",
+                    "unitPrice": "Unit price",
+                    "lumpSum": "Lump sum"
+                },
+                "extractedCount": "{{count}} item",
+                "extractedCount_other": "{{count}} items",
+                "extractedItemsSaved": "{{count}} items extracted from the PDF will be attached to the tender. Contractors will fill prices and quantities in their area.",
+                "noItems": "Upload a PDF to extract bill of quantities items.",
+                "remove": "Remove"
+            },
+            "messages": {
+                "successCreate": "Tender created successfully!",
+                "successUpdate": "Tender updated successfully!",
+                "successPublish": "Tender published successfully!",
+                "errorLoad": "Failed to load tender data.",
+                "errorSave": "Failed to save tender. Please try again.",
+                "errorPublish": "Failed to publish tender. Please try again.",
+                "publishFirst": "Create the tender first to publish it.",
+                "boqRequired": "Upload a PDF bill of quantities to extract at least one item, or add items after extraction."
+            }
         },
         "bidManagement": {
             "title": "Bid Management",
@@ -164,14 +246,19 @@
             "loadError": "Failed to load profile"
         },
         "profile": {
-            "title": "Admin Profile",
-            "subtitle": "Manage your administrator account details.",
+            "title": "Client Profile",
+            "titleCondominiumAdmin": "Condominium Administrator Profile",
+            "titleDelegatedTechnician": "Delegated Technician Profile",
+            "subtitle": "Manage your profile details.",
+            "subtitleCommittente": "Manage your client profile details. All visible fields are required.",
+            "subtitleCondominiumAdmin": "Manage your condominium administrator profile. All visible fields are required.",
+            "subtitleDelegatedTechnician": "Manage your delegated technician profile. All visible fields are required.",
+            "completeAllRequired": "In \"My Profile\" this section must be completed according to your role (all visible fields required).",
+            "roleCommittenteOnly": "Client only",
             "personalInfo": "Personal Information",
             "name": "Full Name",
             "email": "Email Address",
             "phone": "Phone Number",
-            "city": "City",
-            "company": "Company / Organization",
             "saveChanges": "Save Changes",
             "loadError": "Failed to load profile data.",
             "updateSuccess": "Profile updated successfully!",
@@ -179,12 +266,33 @@
             "emailNote": "Email cannot be changed",
             "saving": "Saving...",
             "cancel": "Cancel",
+            "condominiumProfileTitle": "Condominium Administrator or Delegated Technician Profile",
+            "fullNameLabel": "First and Last Name",
+            "roleLabel": "Role",
+            "roleCondominiumAdmin": "Condominium Administrator",
+            "roleDelegatedTechnician": "Delegated Technician",
+            "vatNumber": "VAT Number (P.iva)",
+            "vatNote": "11 digits required",
+            "studioSection": "Studio / Office",
             "placeholders": {
                 "name": "Enter your name",
                 "phone": "Enter phone number",
-                "city": "Enter city",
-                "company": "Enter company name"
-            }
+                "fullName": "First and last name",
+                "selectRole": "Select role",
+                "vat": "11 digits",
+                "studioAddress": "Street, square.....",
+                "studioCity": "City",
+                "studioProvince": "Province"
+            },
+            "changePassword": "Change password",
+            "currentPassword": "Current password",
+            "newPassword": "New password",
+            "confirmNewPassword": "Confirm new password",
+            "updatePassword": "Update password",
+            "passwordUpdated": "Password updated successfully.",
+            "passwordUpdateError": "Failed to update password. Check current password.",
+            "passwordMismatch": "New passwords do not match.",
+            "missingRequired": "Please complete all required client profile fields: {{fields}}."
         },
         "documentManagement": {
             "title": "Document Management",
@@ -444,6 +552,7 @@
         "tenders": {
             "title": "Active Tenders",
             "subtitle": "Explore and participate in new tender opportunities.",
+            "browseTenders": "Browse Tenders",
             "searchPlaceholder": "Search tenders...",
             "allLocations": "All Locations",
             "open": "Open",
@@ -467,9 +576,14 @@
             "minutes": "minutes",
             "expired": "Expired",
             "moreThan": "More than",
+            "clientNameLabel": "Client name",
+            "addressLabel": "Address",
+            "cityLabel": "City",
             "description": "Description",
             "estimatedBudget": "Estimated Budget",
             "boqTitle": "Bill of Quantities (BOQ)",
+            "boqSectionTitle": "Computo metrico (pdf)",
+            "downloadComputoPdf": "Download computo PDF",
             "unit": "Unit",
             "quantity": "Quantity",
             "type": "Type",
@@ -481,6 +595,8 @@
             "smartAiScan": "Smart AI Scan",
             "bidSubmitted": "Bid Submitted",
             "totalAmount": "Total Amount",
+            "subtotalAmount": "Subtotal",
+            "discountApplied": "Discount applied",
             "status": "Status",
             "proposal": "Proposal / Cover Letter",
             "proposalPlaceholder": "Write your proposal or cover letter here...",
@@ -492,13 +608,24 @@
             "item": "Item",
             "price": "Price",
             "total": "Total",
+            "notes": "Notes",
+            "notesPlaceholder": "Optional notes for this item",
+            "openPdf": "Open PDF",
+            "downloadPdf": "Download PDF",
+            "uploadedFile": "Uploaded PDF",
+            "previewFallback": "Preview not available. Use Open/Download PDF.",
             "backToBids": "Back to My Bids",
             "addingDisabled": "Adding new items is disabled for this tender",
             "totalBid": "Total Bid",
+            "totalOffer": "Total Offer",
             "exclVat": "(excl. VAT)",
-            "signQuote": "Sign Quote (Draw or Upload)",
+            "discountOptional": "Discount (optional):",
+            "signQuote": "Signed offer (Upload)",
+            "uploadSignedBoqNote": "Upload the entire compiled and signed bill of quantities (PDF) here.",
+            "uploadSignedBoqPdf": "Upload compiled and signed BOQ (PDF)",
+            "pdfOnlyHint": "PDF only",
+            "documentUploaded": "Document uploaded",
             "uploadPdf": "Upload PDF",
-            "drawSign": "Draw Sign",
             "signHere": "Sign Here",
             "clear": "Clear",
             "useSignature": "Use Signature",
@@ -511,6 +638,7 @@
             "receivedBids": "Received Bids",
             "liveMonitoring": "Live monitoring of incoming offers",
             "waitingForBids": "Waiting for bids...",
+            "bidsVisibleAtDeadline": "Received offers will be visible at the deadline",
             "view": "View",
             "biddingUnavailable": "Bidding Unavailable",
             "contractorOnly": "Available only for Contractors.",
@@ -561,7 +689,11 @@
             "loadError": "Failed to load profile data.",
             "avatarError": "Failed to upload avatar. Max size 2MB.",
             "docError": "Failed to upload document. Max size 10MB.",
-            "saveError": "Failed to save profile. Please check your inputs."
+            "saveError": "Failed to save profile. Please check your inputs.",
+            "bio": "About / Bio",
+            "bioPlaceholder": "Brief company description",
+            "expertise": "Expertise / Sectors",
+            "expertisePlaceholder": "e.g. Construction, Renovation"
         }
     },
     "owner": {
@@ -569,9 +701,14 @@
             "platformManagement": "Platform Management",
             "dashboard": "Dashboard",
             "userManagement": "User Management",
+            "tenders": "Tender Management",
             "revenue": "Revenue",
             "configuration": "Configuration",
             "notifications": "Notifications"
+        },
+        "notifications": {
+            "title": "Notifications",
+            "subtitle": "Platform notification activity."
         },
         "configuration": {
             "title": "System Configuration",
@@ -694,6 +831,7 @@
             "block": "Block",
             "activate": "Activate",
             "viewProfile": "View Profile",
+            "confirmVerify": "Enable this company after verification?",
             "successVerify": "User verified successfully",
             "successBlock": "User blocked successfully",
             "successActivate": "User activated successfully",
@@ -707,27 +845,49 @@
             "tabs": {
                 "all": "All"
             }
+        },
+        "userProfile": {
+            "companyData": "Company data",
+            "clientData": "Client data",
+            "documents": "Documents",
+            "documentsVerification": "Documents for verification",
+            "visuraCamerale": "Chamber of Commerce (Visura camerale)",
+            "visuraCameraleRequired": "Visura camerale (required)",
+            "visuraNotUploaded": "Not uploaded – required for verification",
+            "optionalAttachments": "Optional attachments",
+            "noOptionalAttachments": "No optional attachments",
+            "presentation": "Company presentation",
+            "viewDownload": "View / Download",
+            "verified": "Verified",
+            "verifiedYes": "Yes",
+            "verifiedNo": "No"
         }
     },
     "notifications": {
+        "title": "Notifications",
         "unreadCount": "You have {{count}} unread notifications",
         "allCaughtUp": "All caught up!",
         "markAllRead": "Mark all as read",
+        "viewAll": "View all notifications",
         "emptyTitle": "No notifications",
-        "emptyDesc": "You're all caught up! Check back later."
+        "emptyDesc": "You're all caught up! Check back later.",
+        "emptyDropdown": "No notifications yet.",
+        "newNotification": "New notification",
+        "markAsRead": "Mark as read",
+        "new": "New"
     },
     "landing": {
         "nav": {
             "signIn": "Sign In",
-            "getStarted": "Get Started"
+            "getStarted": "Register"
         },
         "hero": {
-            "slogan": "Smart Construction Management",
-            "title1": "Simplify your",
-            "title2": "Construction Workflow",
-            "desc": "The all-in-one platform to manage tenders, companies, and documents intelligently and quickly.",
-            "startProject": "Start a Project",
-            "joinContractor": "Join as Contractor"
+            "slogan": "The digital method for awarding works",
+            "title1": "Manage tenders",
+            "title2": "with transparency and professionalism",
+            "desc": "Appalto Smart is a method before it is a platform: professionally prepared BOQs, objective comparison of bids, and full traceability of every step of the process.",
+            "startProject": "Register and publish a tender",
+            "joinContractor": "Register as Contractor"
         },
         "stats": {
             "projectValue": "Project Value",
@@ -753,23 +913,82 @@
                 "payments": "Secure and guaranteed payments",
                 "dashboard": "Advanced analytical dashboard"
             },
-            "cta": "Discover the benefits"
+            "cta": "Discover the benefits",
+            "statusLabel": "Status Update",
+            "statusTitle": "Bid Accepted!",
+            "statusDesc": "Your proposal for \"Milan Villa Renovation\" was approved."
         },
         "how": {
-            "title": "How it Works",
-            "subtitle": "Three simple steps toward digital success",
+            "title": "How it works",
+            "subtitle": "A clear flow for awarding construction works",
             "step1": {
-                "title": "Explore Tenders",
-                "desc": "Find the perfect projects for your specialization."
+                "title": "Publish the tender",
+                "desc": "Upload the BOQ and all intervention details."
             },
             "step2": {
-                "title": "Submit Bids",
-                "desc": "Simple bidding system guided by AI."
+                "title": "Collect bids (15 days)",
+                "desc": "Companies participate by compiling the same BOQ."
             },
             "step3": {
-                "title": "Manage and Win",
-                "desc": "Monitor progress and receive fast payments."
+                "title": "Compare, award and formalise",
+                "desc": "See all offers side by side, choose the contractor and upload the client acceptance or minutes."
             }
+        },
+        "flows": {
+            "title": "Two flows, one single method",
+            "subtitle": "Appalto Smart clearly separates the Client journey from the Contractor journey.",
+            "clientTitle": "Client flow (Building Manager or Delegated Technician)",
+            "clientLabel": "Client",
+            "clientIntro": "Manage tenders on behalf of your clients or condominiums with a structured and fully traceable process.",
+            "clientSteps": {
+                "create": "Create the tender by entering title, description, estimated budget range and uploading the professional BOQ.",
+                "collect": "For 15 days companies can participate, but bids remain private until the deadline (no early visibility).",
+                "view": "At the deadline you see all bids at the same time and can download the quotes to discuss them with the client or in the assembly.",
+                "awardAdmin": "If you are a Building Manager you upload the assembly minutes assigning the work to the chosen company.",
+                "awardTech": "If you are a Delegated Technician you upload the quote signed and accepted by the client."
+            },
+            "clientBenefitsTitle": "Benefits for the Client",
+            "clientBenefits": {
+                "free": "Free service for Building Managers and Technicians.",
+                "noSearch": "No manual search for companies.",
+                "fromOffice": "Full management directly from your office.",
+                "comparable": "Like‑for‑like comparison of offers item by item.",
+                "tracked": "Process tracked at every stage."
+            },
+            "contractorTitle": "Contractor flow",
+            "contractorLabel": "Contractor",
+            "contractorIntro": "Take part in tenders professionally, always working on clear BOQs.",
+            "contractorSteps": {
+                "signup": "Free registration and completion of your company profile.",
+                "browse": "Browse tenders with information on area, type of works and budget range.",
+                "credits": "Participation via credits: the cost to unlock a tender depends on its budget range.",
+                "offer": "Fill in the BOQ online by entering unit prices and upload your signed quote.",
+                "win": "If you are awarded, a percentage fee is requested on the contract value; only after payment the award is regularised and the clearance for signing is issued."
+            },
+            "contractorBenefitsTitle": "Benefits for Contractors",
+            "contractorBenefits": {
+                "opportunities": "Access to new work opportunities.",
+                "visibility": "More visibility with building managers and technicians.",
+                "clearDocs": "Always work on clear and consistent technical documentation.",
+                "noSubscription": "No mandatory subscription.",
+                "payWhenParticipate": "You only pay when you participate."
+            }
+        },
+        "security": {
+            "title": "Security and transparency",
+            "points": {
+                "visibility": "Bids are only visible once the tender has closed.",
+                "tracked": "Every step of the process is tracked.",
+                "archived": "Documents are archived in an organised and accessible way.",
+                "fairAccess": "Fair access for all participating companies."
+            }
+        },
+        "finalCta": {
+            "title": "Start using Appalto Smart today",
+            "subtitleAdmins": "Are you a Building Manager or Delegated Technician? Publish your first tender for free.",
+            "subtitleContractors": "Are you a Contractor? Register and discover the available tenders.",
+            "btnClient": "Publish a tender",
+            "btnContractor": "Register as Contractor"
         },
         "testimonials": {
             "title": "What people say",
@@ -794,7 +1013,9 @@
             "contact": "Contact",
             "legal": "Legal",
             "privacy": "Privacy Policy",
-            "terms": "Terms of Service"
+            "terms": "Terms of Service",
+            "country": "Italy",
+            "methodTag": "Digital Method"
         }
     },
     "charts": {
@@ -814,6 +1035,7 @@
         "title": "National Presence",
         "subtitle": "Active tenders and real-time opportunities across the Italian territory.",
         "active_tenders_live": "Active Tenders",
+        "active_label": "active",
         "contractors_online": "Contractors Online",
         "region_north": "Northern Italy",
         "region_center": "Central Italy",

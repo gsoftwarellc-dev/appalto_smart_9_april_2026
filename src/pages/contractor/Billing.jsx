@@ -5,6 +5,7 @@ import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { CreditCard, Plus, ArrowUpRight, ArrowDownRight, Loader2 } from 'lucide-react';
 import BackendApiService from '../../services/backendApi';
+import { formatEuro } from '../../utils/currency';
 
 const Billing = () => {
     const { t } = useTranslation();
@@ -143,7 +144,7 @@ const Billing = () => {
                                     <p className={`font-bold ${trx.amount > 0 ? 'text-green-600' : 'text-gray-900'}`}>
                                         {trx.amount > 0 ? '+' : ''}{trx.amount} {t('contractor.billing.credits')}
                                     </p>
-                                    {trx.cash_amount && <p className="text-xs text-gray-400">€{trx.cash_amount}</p>}
+                                    {trx.cash_amount && <p className="text-xs text-gray-400">{formatEuro(trx.cash_amount)}</p>}
                                     <Badge variant="outline" className="text-xs">{trx.status}</Badge>
                                 </div>
                             </div>

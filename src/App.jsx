@@ -90,6 +90,9 @@ function App() {
                     <Route path="/contractor/billing" element={<Billing />} />
                     <Route path="/contractor/profile" element={<Profile />} />
                     <Route path="/contractor/tenders/:id" element={<TenderDetails />} />
+                    {/* Alias routes requested by client for quoting view */}
+                    <Route path="/contractor/appalti/:id/preventivo" element={<TenderDetails />} />
+                    <Route path="/imprese/appalti/:id/preventivo" element={<TenderDetails />} />
                   </Route>
 
                 </Route>
@@ -101,6 +104,8 @@ function App() {
                   <Route index element={<OwnerDashboard />} />
                   <Route path="/owner/users" element={<UserManagement />} />
                   <Route path="/owner/users/:id" element={<UserProfile />} />
+                  <Route path="/owner/tenders" element={<TendersList />} />
+                  <Route path="/owner/tenders/:id" element={<TenderDetails />} />
                   <Route path="/owner/revenue" element={<RevenueDashboard />} />
                   <Route path="/owner/audit" element={<AuditLog />} />
                   <Route path="/owner/config" element={<Configuration />} />
