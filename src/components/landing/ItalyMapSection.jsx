@@ -5,7 +5,7 @@ import { Activity, Users } from 'lucide-react';
 import italyMap from '@svg-maps/italy';
 
 const [, , MAP_WIDTH, MAP_HEIGHT] = italyMap.viewBox.split(' ').map(Number);
-const MAP_LOCATIONS = italyMap.locations.filter((location) => location.id !== 'sardinia');
+const MAP_LOCATIONS = italyMap.locations;
 
 const cities = [
     { name: 'Torino', x: 92, y: 128, tenders: 89, region: 'region_north' },
@@ -20,6 +20,8 @@ const cities = [
     { name: 'Roma', x: 315, y: 377, tenders: 205, region: 'region_center' },
     { name: 'Napoli', x: 417, y: 448, tenders: 115, region: 'region_south' },
     { name: 'Pescara', x: 383, y: 363, tenders: 53, region: 'region_center' },
+    { name: 'Sassari', x: 111, y: 430, tenders: 31, region: 'region_south' },
+    { name: 'Cagliari', x: 133, y: 548, tenders: 46, region: 'region_south' },
     { name: 'Bari', x: 518, y: 437, tenders: 54, region: 'region_south' },
     { name: 'Lecce', x: 584, y: 501, tenders: 39, region: 'region_south' },
     { name: 'Reggio Calabria', x: 469, y: 633, tenders: 35, region: 'region_south' },

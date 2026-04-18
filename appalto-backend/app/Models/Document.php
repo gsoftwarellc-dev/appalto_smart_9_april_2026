@@ -47,8 +47,8 @@ class Document extends Model
     // Methods
     public function deleteFile()
     {
-        if (Storage::exists($this->file_path)) {
-            Storage::delete($this->file_path);
+        if (Storage::disk('public')->exists($this->file_path)) {
+            Storage::disk('public')->delete($this->file_path);
         }
         $this->delete();
     }
@@ -71,8 +71,8 @@ class Document extends Model
 
         // Auto-delete file when document is deleted
         static::deleting(function ($document) {
-            if (Storage::exists($document->file_path)) {
-                Storage::delete($document->file_path);
+            if (Storage::disk('public')->exists($document->file_path)) {
+                Storage::disk('public')->delete($document->file_path);
             }
         });
     }

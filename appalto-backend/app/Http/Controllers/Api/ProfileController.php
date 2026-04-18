@@ -176,11 +176,18 @@ class ProfileController extends Controller
      */
     public function uploadDocument(Request $request)
     {
+        $validated = $request->validate([
+            'document_type' => ['required', Rule::in(['visura_camerale', 'presentation'])],
+            'file_base64' => 'required_without:file|string',
+            'file' => 'required_without:file_base64|file|max:10240|mimes:pdf',
+            'original_filename' => 'nullable|string|max:255',
+        ]);
+
         // Support both file upload and base64
         if ($request->has('file_base64')) {
             $base64Data = $request->input('file_base64');
-            $originalName = $request->input('original_filename', 'document.pdf');
-            $type = $request->document_type;
+            $originalName = basename($request->input('original_filename', 'document.pdf'));
+            $type = $validated['document_type'];
 
             if (preg_match('/^data:[\w\/\.\-]+;base64,/', $base64Data)) {
                 $base64Data = substr($base64Data, strpos($base64Data, ',') + 1);
@@ -191,6 +198,14 @@ class ProfileController extends Controller
                 return response()->json(['message' => 'Invalid base64 data'], 422);
             }
 
+            if (!str_ends_with(strtolower($originalName), '.pdf')) {
+                return response()->json(['message' => 'Please upload a PDF file.'], 422);
+            }
+
+            if (strlen($fileData) > 10 * 1024 * 1024) {
+                return response()->json(['message' => 'The PDF must be 10MB or smaller.'], 422);
+            }
+
             $fileName = time() . '_' . $type . '_' . $originalName;
             $filePath = 'documents/users/' . $request->user()->id . '/' . $fileName;
             Storage::disk('public')->put($filePath, $fileData);
@@ -198,14 +213,9 @@ class ProfileController extends Controller
             $fileSize = strlen($fileData);
             $mimeType = 'application/pdf'; // Default or improved logic
         } else {
-            $request->validate([
-                'file' => 'required|file|max:10240|mimes:pdf,doc,docx', // 10MB max
-                'document_type' => ['required', Rule::in(['visura_camerale', 'presentation'])],
-            ]);
-
             $file = $request->file('file');
             $originalName = $file->getClientOriginalName();
-            $type = $request->document_type;
+            $type = $validated['document_type'];
             $fileName = time() . '_' . $type . '_' . $originalName;
             $filePath = $file->storeAs('documents/users/' . $request->user()->id, $fileName, 'public');
             $fileSize = $file->getSize();
@@ -230,6 +240,7 @@ class ProfileController extends Controller
             'file_path' => $filePath,
             'file_size' => $fileSize,
             'mime_type' => $mimeType,
+            'original_filename' => $originalName,
         ]);
 
         return response()->json([

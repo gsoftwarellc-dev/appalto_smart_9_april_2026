@@ -154,6 +154,7 @@
             "statusPublished": "Pubblicato",
             "statusDraft": "Bozza",
             "statusClosed": "Chiuso",
+            "statusAwarded": "Assegnato",
             "allStatus": "Tutti gli Stati",
             "bids": "Offerte",
             "edit": "Modifica",
@@ -684,6 +685,11 @@
             "replace": "Sostituisci",
             "noDoc": "Nessun documento caricato",
             "uploadPdf": "Carica PDF",
+            "uploading": "Caricamento...",
+            "uploadSuccess": "Documento caricato correttamente.",
+            "invalidPdf": "Seleziona un file PDF.",
+            "fileTooLarge": "Il PDF deve essere di massimo {{size}}MB.",
+            "pdfHelp": "Solo PDF, massimo 10MB.",
             "uploadBrochure": "Carica Presentazione Aziendale / Brochure (PDF Opzionale)",
             "noFile": "Nessun file caricato",
             "loadError": "Impossibile caricare i dati del profilo.",
@@ -820,6 +826,8 @@
             "block": "Blocca",
             "activate": "Attiva",
             "viewProfile": "Vedi Profilo",
+            "verified": "Verificato",
+            "notVerified": "Non verificato",
             "confirmVerify": "Abilitare questa impresa a seguito di verifica?",
             "successVerify": "Utente verificato con successo",
             "successBlock": "Utente bloccato con successo",
@@ -832,7 +840,8 @@
                 "suspended": "Sospeso"
             },
             "tabs": {
-                "all": "Tutti"
+                "all": "Tutti",
+                "unverified": "Non verificati"
             }
         },
         "userProfile": {

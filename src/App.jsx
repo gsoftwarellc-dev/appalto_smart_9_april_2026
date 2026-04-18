@@ -106,6 +106,7 @@ function App() {
                   <Route path="/owner/users/:id" element={<UserProfile />} />
                   <Route path="/owner/tenders" element={<TendersList />} />
                   <Route path="/owner/tenders/:id" element={<TenderDetails />} />
+                  <Route path="/owner/bids/:id" element={<BidDetails />} />
                   <Route path="/owner/revenue" element={<RevenueDashboard />} />
                   <Route path="/owner/audit" element={<AuditLog />} />
                   <Route path="/owner/config" element={<Configuration />} />

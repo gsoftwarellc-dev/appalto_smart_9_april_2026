@@ -108,7 +108,8 @@ const UserProfile = () => {
 
     const { user, stats, recent_activity, transactions, documents = [] } = profile;
     const isSuspended = user.status === 'suspended';
-    const isContractorUnverified = user.role === 'contractor' && user.verified === false;
+    const isVerified = user.verified === true || user.verified === 1 || user.verified === '1';
+    const isContractorUnverified = user.role === 'contractor' && !isVerified;
     const backendBase = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api').replace(/\/api\/?$/, '') || 'http://localhost:8000';
     const hasDetailedProfileData = Boolean(
         user.address ||
@@ -222,8 +223,8 @@ const UserProfile = () => {
                                 <div className="h-5 w-5" />
                                 <div>
                                     <p className="text-sm text-gray-500">{t('owner.userProfile.verified')}</p>
-                                    <Badge variant={user.verified ? 'success' : 'warning'}>
-                                        {user.verified ? t('owner.userProfile.verifiedYes') : t('owner.userProfile.verifiedNo')}
+                                    <Badge variant={isVerified ? 'success' : 'warning'}>
+                                        {isVerified ? t('owner.userProfile.verifiedYes') : t('owner.userProfile.verifiedNo')}
                                     </Badge>
                                 </div>
                             </div>

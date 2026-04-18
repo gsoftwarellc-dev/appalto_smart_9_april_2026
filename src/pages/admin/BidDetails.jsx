@@ -9,11 +9,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { ArrowLeft, Download, CheckCircle, XCircle, Loader2, Calendar, MapPin, Building, FileText, User } from 'lucide-react';
 import BackendApiService from '../../services/backendApi';
 import { formatEuro } from '../../utils/currency';
+import { useAuth } from '../../context/AuthContext';
+import { getContractorDisplayName, getContractorInitial } from '../../utils/contractorDisplay';
 
 const BidDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const { t } = useTranslation();
+    const { user } = useAuth();
     const [bid, setBid] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -75,6 +78,8 @@ const BidDetails = () => {
     }
 
     if (!bid) return null;
+
+    const canAwardBid = user?.role === 'admin';
 
     const getStatusColor = (status) => {
         switch (status) {
@@ -203,11 +208,13 @@ const BidDetails = () => {
                         <CardContent>
                             <div className="flex items-center gap-4 mb-4">
                                 <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xl">
-                                    {(bid.contractor?.name || 'C').charAt(0).toUpperCase()}
+                                    {getContractorInitial(bid)}
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-gray-900">{bid.contractor?.name}</h3>
-                                    {/* <p className="text-sm text-gray-500">{bid.contractor?.email}</p> */}
+                                    <h3 className="font-bold text-gray-900">{getContractorDisplayName(bid)}</h3>
+                                    {bid.contractor?.legal_representative && bid.contractor?.legal_representative !== getContractorDisplayName(bid) && (
+                                        <p className="text-sm text-gray-500">{bid.contractor.legal_representative}</p>
+                                    )}
                                 </div>
                             </div>
                             <div className="text-sm space-y-2 pt-4 border-t border-gray-100">
@@ -257,42 +264,44 @@ const BidDetails = () => {
                     )}
 
                     {/* Actions */}
-                    <Card className="border-blue-100 bg-blue-50/30">
-                        <CardHeader>
-                            <CardTitle className="text-lg">{t('admin.bidDetails.actions')}</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-3">
-                            {bid.status === 'submitted' && (
-                                <>
-                                    <Button
-                                        className="w-full bg-green-600 hover:bg-green-700 text-white"
-                                        onClick={handleAward}
-                                        disabled={processing}
-                                    >
-                                        {processing ? (
-                                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                                        ) : (
-                                            <CheckCircle className="h-4 w-4 mr-2" />
-                                        )}
-                                        {t('admin.bidDetails.awardJob')}
-                                    </Button>
-                                    {/* Reject button logic could be added here */}
-                                </>
-                            )}
+                    {canAwardBid && (
+                        <Card className="border-blue-100 bg-blue-50/30">
+                            <CardHeader>
+                                <CardTitle className="text-lg">{t('admin.bidDetails.actions')}</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-3">
+                                {bid.status === 'submitted' && (
+                                    <>
+                                        <Button
+                                            className="w-full bg-green-600 hover:bg-green-700 text-white"
+                                            onClick={handleAward}
+                                            disabled={processing}
+                                        >
+                                            {processing ? (
+                                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                            ) : (
+                                                <CheckCircle className="h-4 w-4 mr-2" />
+                                            )}
+                                            {t('admin.bidDetails.awardJob')}
+                                        </Button>
+                                        {/* Reject button logic could be added here */}
+                                    </>
+                                )}
 
-                            {bid.status === 'awarded' && (
-                                <div className="p-3 bg-green-100 text-green-800 rounded-md text-sm text-center font-medium">
-                                    ✓ {t('admin.bidDetails.awardedParams')}
-                                </div>
-                            )}
+                                {bid.status === 'awarded' && (
+                                    <div className="p-3 bg-green-100 text-green-800 rounded-md text-sm text-center font-medium">
+                                        ✓ {t('admin.bidDetails.awardedParams')}
+                                    </div>
+                                )}
 
-                            {bid.status !== 'submitted' && bid.status !== 'awarded' && (
-                                <div className="text-center text-sm text-gray-500 italic">
-                                    {t('admin.bidDetails.noActions')}: {bid.status}
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
+                                {bid.status !== 'submitted' && bid.status !== 'awarded' && (
+                                    <div className="text-center text-sm text-gray-500 italic">
+                                        {t('admin.bidDetails.noActions')}: {bid.status}
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+                    )}
                 </div>
             </div>
         </div>

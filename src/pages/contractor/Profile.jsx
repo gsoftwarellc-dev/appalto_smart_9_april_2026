@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/Card';
@@ -13,6 +13,9 @@ const getBackendBaseUrl = () => {
     return api.replace(/\/api\/?$/, '') || 'http://localhost:8000';
 };
 
+const MAX_DOCUMENT_SIZE_MB = 10;
+const MAX_DOCUMENT_SIZE_BYTES = MAX_DOCUMENT_SIZE_MB * 1024 * 1024;
+
 const Profile = () => {
     const { t } = useTranslation();
     const { updateUser } = useAuth();
@@ -21,6 +24,10 @@ const Profile = () => {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState(null);
+    const [uploadingDocumentType, setUploadingDocumentType] = useState(null);
+    const [uploadSuccess, setUploadSuccess] = useState(null);
+    const chamberInputRef = useRef(null);
+    const presentationInputRef = useRef(null);
 
     // Password change
     const [passwordForm, setPasswordForm] = useState({ current: '', new: '', confirm: '' });
@@ -85,17 +92,53 @@ const Profile = () => {
         }
     };
 
+    const getDocumentInputRef = (type) => {
+        return type === 'visura_camerale' ? chamberInputRef : presentationInputRef;
+    };
+
+    const triggerDocumentPicker = (type) => {
+        getDocumentInputRef(type).current?.click();
+    };
+
+    const isPdfFile = (file) => {
+        return file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+    };
+
     const handleFileChange = async (e, type) => {
-        const file = e.target.files[0];
-        if (file) {
-            setError(null);
-            try {
-                await BackendApiService.uploadProfileDocument(file, type);
-                loadProfile(); // Refresh list to update UI state
-            } catch (error) {
-                console.error("Document upload failed", error);
-                setError(error.response?.data?.message || t('contractor.profile.docError'));
-            }
+        const input = e.currentTarget;
+        const file = input.files?.[0];
+        if (!file) return;
+
+        setError(null);
+        setUploadSuccess(null);
+
+        if (!isPdfFile(file)) {
+            setError(t('contractor.profile.invalidPdf'));
+            input.value = '';
+            return;
+        }
+
+        if (file.size > MAX_DOCUMENT_SIZE_BYTES) {
+            setError(t('contractor.profile.fileTooLarge', { size: MAX_DOCUMENT_SIZE_MB }));
+            input.value = '';
+            return;
+        }
+
+        try {
+            setUploadingDocumentType(type);
+            await BackendApiService.uploadProfileDocument(file, type);
+            await loadProfile();
+            setUploadSuccess(type);
+        } catch (error) {
+            console.error("Document upload failed", error);
+            const message = error.response?.data?.message || t('contractor.profile.docError');
+            const validationErrors = error.response?.data?.errors
+                ? Object.values(error.response.data.errors).flat().join(', ')
+                : null;
+            setError(validationErrors ? `${message}: ${validationErrors}` : message);
+        } finally {
+            setUploadingDocumentType(null);
+            input.value = '';
         }
     };
 
@@ -303,6 +346,12 @@ const Profile = () => {
                                 <span>{error}</span>
                             </div>
                         )}
+                        {uploadSuccess && (
+                            <div className="p-4 bg-green-50 text-green-700 rounded-lg text-sm border border-green-200 flex items-start">
+                                <CheckCircle className="h-5 w-5 mr-3 mt-0.5 shrink-0" />
+                                <span>{t('contractor.profile.uploadSuccess')}</span>
+                            </div>
+                        )}
 
                         <section className="space-y-4">
                             <h3 className="font-bold text-gray-900 text-base">{t('contractor.profile.mandatoryFields')}</h3>
@@ -406,6 +455,13 @@ const Profile = () => {
                         <div className="border-t border-gray-100 pt-6 space-y-6">
                             <div className="space-y-2">
                                 <label className="text-sm font-semibold text-gray-700">{t('contractor.profile.uploadChamber')}</label>
+                                <input
+                                    ref={chamberInputRef}
+                                    type="file"
+                                    accept="application/pdf,.pdf"
+                                    className="hidden"
+                                    onChange={(e) => handleFileChange(e, 'visura_camerale')}
+                                />
 
                                 {getDocument('visura_camerale') ? (
                                     <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
@@ -427,29 +483,51 @@ const Profile = () => {
                                                 </a>
                                             </div>
                                         </div>
-                                        {isEditing && (
-                                            <label className="cursor-pointer text-sm font-medium text-blue-600 hover:text-blue-700">
-                                                {t('contractor.profile.replace')}
-                                                <input type="file" accept=".pdf" className="hidden" onChange={(e) => handleFileChange(e, 'visura_camerale')} />
-                                            </label>
-                                        )}
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => triggerDocumentPicker('visura_camerale')}
+                                            disabled={uploadingDocumentType === 'visura_camerale'}
+                                        >
+                                            {uploadingDocumentType === 'visura_camerale' ? (
+                                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                            ) : (
+                                                <Upload className="h-4 w-4 mr-2" />
+                                            )}
+                                            {uploadingDocumentType === 'visura_camerale' ? t('contractor.profile.uploading') : t('contractor.profile.replace')}
+                                        </Button>
                                     </div>
                                 ) : (
-                                    <div className={`border-2 border-dashed rounded-lg p-6 flex flex-col items-center text-center ${isEditing ? 'border-gray-300 hover:border-blue-400 bg-gray-50 cursor-pointer' : 'border-gray-200 bg-gray-50 opacity-60'}`}>
+                                    <div className="border-2 border-dashed rounded-lg p-6 flex flex-col items-center text-center border-gray-300 bg-gray-50">
                                         <FileText className="h-10 w-10 text-gray-400 mb-2" />
                                         <p className="text-sm text-gray-500 mb-2">{t('contractor.profile.noDoc')}</p>
-                                        {isEditing && (
-                                            <label className="cursor-pointer">
-                                                <span className="text-sm font-medium text-blue-600 hover:text-blue-700">{t('contractor.profile.uploadPdf')}</span>
-                                                <input type="file" accept=".pdf" className="hidden" onChange={(e) => handleFileChange(e, 'visura_camerale')} />
-                                            </label>
-                                        )}
+                                        <p className="text-xs text-gray-500 mb-4">{t('contractor.profile.pdfHelp')}</p>
+                                        <Button
+                                            type="button"
+                                            onClick={() => triggerDocumentPicker('visura_camerale')}
+                                            disabled={uploadingDocumentType === 'visura_camerale'}
+                                        >
+                                            {uploadingDocumentType === 'visura_camerale' ? (
+                                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                            ) : (
+                                                <Upload className="h-4 w-4 mr-2" />
+                                            )}
+                                            {uploadingDocumentType === 'visura_camerale' ? t('contractor.profile.uploading') : t('contractor.profile.uploadPdf')}
+                                        </Button>
                                     </div>
                                 )}
                             </div>
 
                             <div className="space-y-2">
                                 <label className="text-sm font-semibold text-gray-700">{t('contractor.profile.uploadBrochure')}</label>
+                                <input
+                                    ref={presentationInputRef}
+                                    type="file"
+                                    accept="application/pdf,.pdf"
+                                    className="hidden"
+                                    onChange={(e) => handleFileChange(e, 'presentation')}
+                                />
 
                                 {getDocument('presentation') ? (
                                     <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
@@ -471,23 +549,39 @@ const Profile = () => {
                                                 </a>
                                             </div>
                                         </div>
-                                        {isEditing && (
-                                            <label className="cursor-pointer text-sm font-medium text-blue-600 hover:text-blue-700">
-                                                {t('contractor.profile.replace')}
-                                                <input type="file" accept=".pdf" className="hidden" onChange={(e) => handleFileChange(e, 'presentation')} />
-                                            </label>
-                                        )}
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => triggerDocumentPicker('presentation')}
+                                            disabled={uploadingDocumentType === 'presentation'}
+                                        >
+                                            {uploadingDocumentType === 'presentation' ? (
+                                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                            ) : (
+                                                <Upload className="h-4 w-4 mr-2" />
+                                            )}
+                                            {uploadingDocumentType === 'presentation' ? t('contractor.profile.uploading') : t('contractor.profile.replace')}
+                                        </Button>
                                     </div>
                                 ) : (
-                                    <div className={`border-2 border-dashed rounded-lg p-6 flex flex-col items-center text-center ${isEditing ? 'border-gray-300 hover:border-blue-400 bg-gray-50 cursor-pointer' : 'border-gray-200 bg-gray-50 opacity-60'}`}>
+                                    <div className="border-2 border-dashed rounded-lg p-6 flex flex-col items-center text-center border-gray-300 bg-gray-50">
                                         <FileText className="h-10 w-10 text-gray-400 mb-2" />
                                         <p className="text-sm text-gray-500 mb-2">{t('contractor.profile.noFile')}</p>
-                                        {isEditing && (
-                                            <label className="cursor-pointer">
-                                                <span className="text-sm font-medium text-blue-600 hover:text-blue-700">{t('contractor.profile.uploadPdf')}</span>
-                                                <input type="file" accept=".pdf" className="hidden" onChange={(e) => handleFileChange(e, 'presentation')} />
-                                            </label>
-                                        )}
+                                        <p className="text-xs text-gray-500 mb-4">{t('contractor.profile.pdfHelp')}</p>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            onClick={() => triggerDocumentPicker('presentation')}
+                                            disabled={uploadingDocumentType === 'presentation'}
+                                        >
+                                            {uploadingDocumentType === 'presentation' ? (
+                                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                            ) : (
+                                                <Upload className="h-4 w-4 mr-2" />
+                                            )}
+                                            {uploadingDocumentType === 'presentation' ? t('contractor.profile.uploading') : t('contractor.profile.uploadPdf')}
+                                        </Button>
                                     </div>
                                 )}
                             </div>

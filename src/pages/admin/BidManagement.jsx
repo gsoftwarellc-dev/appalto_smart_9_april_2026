@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Search, FileCheck, ChevronRight, ArrowLeft, Download, Eye, Loader2 } from 'lucide-react';
 import BackendApiService from '../../services/backendApi';
 import { formatEuro } from '../../utils/currency';
+import { getContractorDisplayName } from '../../utils/contractorDisplay';
 
 const BidManagement = () => {
     const navigate = useNavigate();
@@ -245,7 +246,7 @@ const BidManagement = () => {
                             <TableBody>
                                 {bids.map((bid) => (
                                     <TableRow key={bid.id}>
-                                        <TableCell className="font-medium">{bid.contractor?.name || bid.contractor_name}</TableCell>
+                                        <TableCell className="font-medium">{getContractorDisplayName(bid)}</TableCell>
                                         <TableCell className="font-semibold text-gray-900">{formatEuro(bid.total_amount || 0)}</TableCell>
                                         <TableCell>{new Date(bid.created_at || bid.date).toLocaleDateString()}</TableCell>
                                         <TableCell>

@@ -89,6 +89,7 @@
             "statusPublished": "Published",
             "statusDraft": "Draft",
             "statusClosed": "Closed",
+            "statusAwarded": "Awarded",
             "allStatus": "All Status",
             "bids": "Bids",
             "edit": "Edit",
@@ -684,6 +685,11 @@
             "replace": "Replace",
             "noDoc": "No document uploaded",
             "uploadPdf": "Upload PDF",
+            "uploading": "Uploading...",
+            "uploadSuccess": "Document uploaded successfully.",
+            "invalidPdf": "Please select a PDF file.",
+            "fileTooLarge": "The PDF must be {{size}}MB or smaller.",
+            "pdfHelp": "PDF only, max 10MB.",
             "uploadBrochure": "Upload Company Presentation / Brochure (PDF Optional)",
             "noFile": "No file uploaded",
             "loadError": "Failed to load profile data.",
@@ -831,6 +837,8 @@
             "block": "Block",
             "activate": "Activate",
             "viewProfile": "View Profile",
+            "verified": "Verified",
+            "notVerified": "Not verified",
             "confirmVerify": "Enable this company after verification?",
             "successVerify": "User verified successfully",
             "successBlock": "User blocked successfully",
@@ -843,7 +851,8 @@
                 "suspended": "Suspended"
             },
             "tabs": {
-                "all": "All"
+                "all": "All",
+                "unverified": "Unverified"
             }
         },
         "userProfile": {

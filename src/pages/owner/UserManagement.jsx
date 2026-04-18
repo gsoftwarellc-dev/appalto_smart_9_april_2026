@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Ca
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
-import { Search, Users, AlertTriangle, CheckCircle, XCircle, Loader2, Eye } from 'lucide-react';
+import { Search, Users, AlertTriangle, XCircle, Loader2, Eye } from 'lucide-react';
 import {
     Table,
     TableBody,
@@ -19,7 +19,7 @@ import api from '../../services/backendApi';
 const UserManagement = () => {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const [activeTab, setActiveTab] = useState('all'); // 'all', 'clients', 'contractors', 'owners'
+    const [activeTab, setActiveTab] = useState('all'); // 'all', 'clients', 'contractors', 'unverified', 'owners'
     const [searchTerm, setSearchTerm] = useState('');
     const [users, setUsers] = useState([]);
     const [statistics, setStatistics] = useState(null);
@@ -36,7 +36,7 @@ const UserManagement = () => {
         try {
             setLoading(true);
             let role;
-            if (activeTab === 'contractors') {
+            if (activeTab === 'contractors' || activeTab === 'unverified') {
                 role = 'contractor';
             } else if (activeTab === 'clients') {
                 role = 'admin';
@@ -46,6 +46,7 @@ const UserManagement = () => {
             // If activeTab is 'all', don't send role parameter to get all users
             const params = {
                 ...(role && { role }),
+                ...(activeTab === 'unverified' && { verified: 'false' }),
                 ...(searchTerm && { search: searchTerm })
             };
             const response = await api.getUsers(params);
@@ -68,32 +69,13 @@ const UserManagement = () => {
         }
     };
 
-    const handleAction = async (id, action) => {
-        try {
-            if (action === 'verify') {
-                await api.verifyContractor(id);
-            } else if (action === 'block') {
-                await api.updateUserStatus(id, 'suspended');
-            } else if (action === 'activate') {
-                await api.updateUserStatus(id, 'active');
-            }
-
-            // Refresh the user list and statistics
-            await fetchUsers();
-            await fetchStatistics();
-
-            if (action === 'verify') alert(t('owner.users.successVerify'));
-            else if (action === 'block') alert(t('owner.users.successBlock'));
-            else if (action === 'activate') alert(t('owner.users.successActivate'));
-        } catch (err) {
-            console.error(`Error performing ${action}:`, err);
-            alert(`${t('owner.users.errorAction')}: ${err.response?.data?.message || 'Unknown error'}`);
-        }
+    const isUserVerified = (user) => {
+        return user.verified === true || user.verified === 1 || user.verified === '1';
     };
 
     const getUserStatus = (user) => {
         if (user.status === 'suspended') return t('owner.users.statusValues.suspended');
-        if (user.verified === false && user.role === 'contractor') return t('owner.users.statusValues.pending');
+        if (user.status === 'pending') return t('owner.users.statusValues.pending');
         return t('owner.users.statusValues.active');
     };
 
@@ -180,6 +162,13 @@ const UserManagement = () => {
                                 {t('owner.users.contractors')}
                             </button>
                             <button
+                                onClick={() => setActiveTab('unverified')}
+                                className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${activeTab === 'unverified' ? 'bg-white shadow text-blue-600' : 'text-gray-500 hover:text-gray-900'
+                                    }`}
+                            >
+                                {t('owner.users.tabs.unverified')}
+                            </button>
+                            <button
                                 onClick={() => setActiveTab('owners')}
                                 className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${activeTab === 'owners' ? 'bg-white shadow text-blue-600' : 'text-gray-500 hover:text-gray-900'
                                     }`}
@@ -222,21 +211,27 @@ const UserManagement = () => {
                                     <TableHead>{t('admin.userProfile.table.type')}</TableHead>
                                     <TableHead>{t('owner.users.email')}</TableHead>
                                     <TableHead>{t('owner.users.status')}</TableHead>
-                                    <TableHead>{activeTab === 'contractors' ? t('owner.users.credits') : t('owner.users.activeTenders')}</TableHead>
+                                    <TableHead>{['contractors', 'unverified'].includes(activeTab) ? t('owner.users.credits') : t('owner.users.activeTenders')}</TableHead>
                                     <TableHead className="text-right">{t('owner.users.actions')}</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {users.map((user) => {
                                     const status = getUserStatus(user);
+                                    const isVerified = isUserVerified(user);
                                     return (
                                         <TableRow key={user.id}>
                                             <TableCell className="font-medium">
-                                                <div className="flex items-center gap-2">
-                                                    {user.role === 'contractor' && !user.verified && (
+                                                <div className="flex flex-wrap items-center gap-2">
+                                                    {user.role === 'contractor' && !isVerified && (
                                                         <AlertTriangle className="h-4 w-4 text-amber-500" title={t('owner.users.statusValues.pending')} />
                                                     )}
-                                                    {user.name}
+                                                    <span>{user.name}</span>
+                                                    {user.role === 'contractor' && (
+                                                        <Badge variant={isVerified ? 'success' : 'warning'}>
+                                                            {isVerified ? t('owner.users.verified') : t('owner.users.notVerified')}
+                                                        </Badge>
+                                                    )}
                                                 </div>
                                             </TableCell>
                                             <TableCell>{getUserTypeLabel(user)}</TableCell>
@@ -247,24 +242,10 @@ const UserManagement = () => {
                                                 </Badge>
                                             </TableCell>
                                             <TableCell>{user.role === 'contractor' ? (user.credits?.balance ?? '0') : '0'}</TableCell>
-                                            <TableCell className="text-right space-x-2">
+                                            <TableCell className="text-right">
                                                 <Button size="sm" variant="ghost" className="text-blue-600 hover:bg-blue-50" onClick={() => navigate(`/owner/users/${user.id}`)}>
                                                     <Eye className="h-4 w-4 mr-1" /> {t('owner.users.viewProfile')}
                                                 </Button>
-                                                {(user.role === 'contractor' && !user.verified) && (
-                                                    <Button size="sm" variant="outline" className="text-green-600 hover:bg-green-50" onClick={() => handleAction(user.id, 'verify')}>
-                                                        <CheckCircle className="h-4 w-4 mr-1" /> {t('owner.users.verify')}
-                                                    </Button>
-                                                )}
-                                                {status !== 'Suspended' ? (
-                                                    <Button size="sm" variant="ghost" className="text-red-600 hover:bg-red-50" onClick={() => handleAction(user.id, 'block')}>
-                                                        {t('owner.users.block')}
-                                                    </Button>
-                                                ) : (
-                                                    <Button size="sm" variant="ghost" className="text-green-600 hover:bg-green-50" onClick={() => handleAction(user.id, 'activate')}>
-                                                        {t('owner.users.activate')}
-                                                    </Button>
-                                                )}
                                             </TableCell>
                                         </TableRow>
                                     );

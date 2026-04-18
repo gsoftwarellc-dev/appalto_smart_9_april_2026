@@ -6,6 +6,7 @@ import { ArrowLeft, Award, CheckCircle, Download, TrendingDown, TrendingUp, Aler
 import { useTranslation } from 'react-i18next';
 import MockApiService from '../../services/mockApi';
 import BackendApiService from '../../services/backendApi';
+import { getContractorDisplayName } from '../../utils/contractorDisplay';
 
 const BidComparison = () => {
     const { id } = useParams();
@@ -106,7 +107,7 @@ const BidComparison = () => {
                                         <th key={bid.id} className="p-3 font-bold text-gray-900 min-w-[200px] text-right bg-blue-50/30 border-l sticky top-0 z-20">
                                             <div className="flex flex-col items-end">
                                                 <div className="flex items-center gap-1">
-                                                    {bid.contractorName}
+                                                    {getContractorDisplayName(bid)}
                                                     {bid.status === 'Accepted' && <CheckCircle className="h-4 w-4 text-green-600" />}
                                                 </div>
                                                 <div className="text-[10px] text-gray-400 font-normal">{new Date(bid.submittedAt || Date.now()).toLocaleDateString()}</div>
@@ -140,7 +141,7 @@ const BidComparison = () => {
                                                 <Button
                                                     size="sm"
                                                     className="w-full bg-green-600 hover:bg-green-700 shadow-sm"
-                                                    onClick={() => handleAward(bid.id, bid.contractorName)}
+                                                    onClick={() => handleAward(bid.id, getContractorDisplayName(bid))}
                                                     disabled={awarding}
                                                     title={t('admin.bidComparison.selectWinner')}
                                                 >

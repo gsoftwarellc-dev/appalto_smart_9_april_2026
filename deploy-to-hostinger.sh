@@ -62,6 +62,7 @@ rsync -avz --delete -e "$RSYNC_SSH" \
   --exclude='vendor' \
   --exclude='node_modules' \
   --exclude='.git' \
+  --exclude='.git-local-backup' \
   --exclude='public/storage' \
   --exclude='storage/app/**' \
   --exclude='storage/logs/*' \

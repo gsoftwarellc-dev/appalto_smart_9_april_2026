@@ -42,6 +42,7 @@ const TendersList = () => {
             case 'published': return 'success';
             case 'draft': return 'warning';
             case 'closed': return 'secondary';
+            case 'awarded': return 'success';
             default: return 'default';
         }
     };
@@ -51,6 +52,7 @@ const TendersList = () => {
             case 'published': return t('admin.tendersList.statusPublished');
             case 'draft': return t('admin.tendersList.statusDraft');
             case 'closed': return t('admin.tendersList.statusClosed');
+            case 'awarded': return t('admin.tendersList.statusAwarded');
             default: return status;
         }
     };
@@ -127,6 +129,7 @@ const TendersList = () => {
                         <option value="draft">{t('admin.tendersList.statusDraft')}</option>
                         <option value="published">{t('admin.tendersList.statusPublished')}</option>
                         <option value="closed">{t('admin.tendersList.statusClosed')}</option>
+                        <option value="awarded">{t('admin.tendersList.statusAwarded')}</option>
                     </select>
                 </div>
             </div>

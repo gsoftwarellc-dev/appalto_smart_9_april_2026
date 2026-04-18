@@ -52,8 +52,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/tenders/{id}/boq-items', [TenderController::class, 'updateBoqItems']);
         
         // Bid Management
-        Route::get('/tenders/{id}/bids', [BidController::class, 'forTender']);
-        Route::get('/bids/{id}', [BidController::class, 'show']);
         Route::post('/bids/{id}/award', [BidController::class, 'award']);
         
         // Document Management
@@ -126,6 +124,8 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // Shared Routes (with internal authorization checks)
+    Route::get('/tenders/{id}/bids', [BidController::class, 'forTender']);
+    Route::get('/bids/{id}', [BidController::class, 'show']);
     Route::get('/tenders/{id}/documents', [DocumentController::class, 'index']);
     Route::get('/documents/{id}/download', [DocumentController::class, 'download']);
 });

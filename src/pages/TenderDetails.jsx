@@ -13,6 +13,7 @@ import {
 import Modal from '../components/ui/Modal';
 import BackendApiService from '../services/backendApi';
 import AiScan from './contractor/AiScan';
+import { getContractorDisplayName } from '../utils/contractorDisplay';
 
 const BACKEND_URL = 'http://localhost:8000';
 const getBackendBaseUrl = () => (import.meta.env.VITE_API_URL || BACKEND_URL + '/api').replace(/\/api\/?$/, '') || BACKEND_URL;
@@ -148,6 +149,15 @@ const resolveBoqUrl = (rawUrl) => {
     const base = getBackendBaseUrl();
     return `${base}${rawUrl.startsWith('/') ? '' : '/'}${rawUrl}`;
 };
+
+const resolveBackendFileUrl = (rawUrl) => {
+    if (!rawUrl) return null;
+    if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://')) return rawUrl;
+    if (rawUrl.startsWith('/storage/')) return `${getBackendBaseUrl()}${rawUrl}`;
+    return `${getBackendBaseUrl()}/storage/${rawUrl.replace(/^\/+/, '')}`;
+};
+
+const VIEWABLE_BID_STATUSES = ['submitted', 'accepted', 'rejected', 'awarded'];
 
 const TenderDetails = () => {
     const { id } = useParams();
@@ -486,6 +496,21 @@ const TenderDetails = () => {
     const canBid = user?.role === 'contractor' && isUnlocked && !isLockedByDeadline;
     const isContractor = user?.role === 'contractor';
     const isAdmin = user?.role === 'admin' || user?.role === 'owner';
+    const canViewReceivedBids = user?.role === 'owner' || isDeadlinePassed;
+    const getBidDetailsPath = (bidId) => user?.role === 'owner' ? `/owner/bids/${bidId}` : `/admin/bids/${bidId}`;
+    const hasViewableExistingBid = isContractor && submittedBid && VIEWABLE_BID_STATUSES.includes(String(bidStatus || '').toLowerCase());
+    const showContractorOfferPanel = canBid || hasViewableExistingBid;
+    const submittedOfferFileUrl = resolveBackendFileUrl(submittedBid?.offer_file_url || submittedBid?.offer_file_path);
+    const getContractorBidStatusLabel = (status) => {
+        switch (String(status || '').toLowerCase()) {
+            case 'submitted': return t('admin.bidManagement.status.submitted');
+            case 'accepted': return t('contractor.tenders.awarded');
+            case 'awarded': return t('contractor.tenders.awarded');
+            case 'rejected': return t('admin.bidManagement.status.rejected');
+            case 'draft': return t('contractor.bids.status.draft');
+            default: return status || t('common.na');
+        }
+    };
     const formatCurrency = (value) => {
         const amount = Number(value);
         const safeAmount = Number.isFinite(amount) ? amount : 0;
@@ -730,35 +755,39 @@ const TenderDetails = () => {
 
 
                 {/* RIGHT COLUMN: Bidding Interface */}
-                {canBid ? (
+                {showContractorOfferPanel ? (
                     <div className={isContractor ? 'w-full flex-shrink-0' : 'w-full lg:w-[420px] xl:w-[450px] flex-shrink-0'}>
                         <Card className={`${isContractor ? '' : 'lg:sticky lg:top-6 '}border shadow-lg border-blue-100 min-w-0`}>
                             <CardHeader className="bg-blue-50/50 pb-3 sm:pb-4 border-b border-blue-100 px-4 sm:px-6">
-                                <CardTitle className="text-blue-700 text-base sm:text-lg">{t('contractor.tenders.submitOffer')}</CardTitle>
+                                <CardTitle className="text-blue-700 text-base sm:text-lg">
+                                    {hasViewableExistingBid ? t('contractor.tenders.bidSubmitted') : t('contractor.tenders.submitOffer')}
+                                </CardTitle>
                             </CardHeader>
                             <CardContent className="p-0 min-w-0">
                                 {/* Tabs */}
-                                <div className="flex border-b border-gray-200 px-3 sm:px-4 pt-3 sm:pt-4 mb-0">
-                                    <button
-                                        type="button"
-                                        className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-bold transition-all ${activeBidTab === 'manual' ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50/30' : 'text-gray-400 hover:text-gray-600'
-                                            }`}
-                                        onClick={() => setActiveBidTab('manual')}
-                                    >
-                                        {t('contractor.tenders.manualEntry')}
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-bold transition-all flex items-center gap-1.5 sm:gap-2 relative ${activeBidTab === 'ai' ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50/30' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
-                                            }`}
-                                        onClick={() => setActiveBidTab('ai')}
-                                    >
-                                        <Zap className={`h-3.5 w-3.5 flex-shrink-0 ${activeBidTab === 'ai' ? 'text-purple-600 fill-purple-600' : 'text-gray-300'}`} />
-                                        <span className="truncate">{t('contractor.tenders.smartAiScan')}</span>
-                                    </button>
-                                </div>
+                                {!hasViewableExistingBid && (
+                                    <div className="flex border-b border-gray-200 px-3 sm:px-4 pt-3 sm:pt-4 mb-0">
+                                        <button
+                                            type="button"
+                                            className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-bold transition-all ${activeBidTab === 'manual' ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50/30' : 'text-gray-400 hover:text-gray-600'
+                                                }`}
+                                            onClick={() => setActiveBidTab('manual')}
+                                        >
+                                            {t('contractor.tenders.manualEntry')}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-bold transition-all flex items-center gap-1.5 sm:gap-2 relative ${activeBidTab === 'ai' ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50/30' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
+                                                }`}
+                                            onClick={() => setActiveBidTab('ai')}
+                                        >
+                                            <Zap className={`h-3.5 w-3.5 flex-shrink-0 ${activeBidTab === 'ai' ? 'text-purple-600 fill-purple-600' : 'text-gray-300'}`} />
+                                            <span className="truncate">{t('contractor.tenders.smartAiScan')}</span>
+                                        </button>
+                                    </div>
+                                )}
 
-                                {bidStatus === 'submitted' ? (
+                                {hasViewableExistingBid ? (
                                     <div className="bg-white rounded-b-xl overflow-hidden min-w-0">
                                         <div className="bg-green-50/50 p-4 sm:p-6 border-b border-green-100">
                                             <div className="flex items-center gap-3 mb-3 sm:mb-4">
@@ -789,7 +818,7 @@ const TenderDetails = () => {
                                                 </div>
                                                 <div className="bg-white p-2.5 sm:p-3 rounded border border-green-100 shadow-sm min-w-0">
                                                     <p className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider mb-0.5 sm:mb-1">{t('contractor.tenders.status')}</p>
-                                                    <Badge className="bg-green-100 text-green-700 hover:bg-green-200 border-green-200 text-xs">{submittedBid?.status || 'Submitted'}</Badge>
+                                                    <Badge className="bg-green-100 text-green-700 hover:bg-green-200 border-green-200 text-xs">{getContractorBidStatusLabel(submittedBid?.status)}</Badge>
                                                 </div>
                                             </div>
                                         </div>
@@ -812,8 +841,8 @@ const TenderDetails = () => {
                                                 <h4 className="text-xs font-bold text-gray-900 uppercase tracking-wider mb-2 flex items-center gap-2">
                                                     <User className="h-3.5 w-3.5 text-gray-400" /> {t('contractor.tenders.authorization')}
                                                 </h4>
-                                                {(submittedBid?.offer_file_url || submittedBid?.offer_file_path) ? (
-                                                    <div className="flex items-center gap-3 p-3 bg-blue-50 border border-blue-100 rounded-lg group hover:border-blue-300 transition-colors cursor-pointer" onClick={() => window.open(submittedBid.offer_file_url || submittedBid.offer_file_path, '_blank')}>
+                                                {submittedOfferFileUrl ? (
+                                                    <div className="flex items-center gap-3 p-3 bg-blue-50 border border-blue-100 rounded-lg group hover:border-blue-300 transition-colors cursor-pointer" onClick={() => window.open(submittedOfferFileUrl, '_blank', 'noopener,noreferrer')}>
                                                         <div className="h-8 w-8 bg-blue-100 rounded flex items-center justify-center text-blue-600">
                                                             <FileText className="h-4 w-4" />
                                                         </div>
@@ -1089,7 +1118,7 @@ const TenderDetails = () => {
                                     </Badge>
                                 </CardTitle>
                                 <p className="text-[10px] sm:text-xs text-gray-500 mt-1 font-medium">
-                                    {isDeadlinePassed
+                                    {canViewReceivedBids
                                         ? t('contractor.tenders.liveMonitoring')
                                         : t('contractor.tenders.bidsVisibleAtDeadline')}
                                 </p>
@@ -1102,7 +1131,7 @@ const TenderDetails = () => {
                                         </div>
                                         <p className="font-medium animate-pulse text-sm sm:text-base">{t('contractor.tenders.waitingForBids')}</p>
                                     </div>
-                                ) : !isDeadlinePassed ? (
+                                ) : !canViewReceivedBids ? (
                                     <div className="p-6 sm:p-8 text-center text-gray-500 text-xs sm:text-sm">
                                         <p className="font-medium mb-1">
                                             {t('contractor.tenders.bidsVisibleAtDeadline')}
@@ -1124,7 +1153,7 @@ const TenderDetails = () => {
                                                         <div className="p-1 sm:p-1.5 bg-blue-50 text-blue-600 rounded-lg flex-shrink-0">
                                                             <User className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                                                         </div>
-                                                        <span className="truncate">{bid.contractor?.name || bid.contractor_name || 'Unknown Contractor'}</span>
+                                                        <span className="truncate">{getContractorDisplayName(bid)}</span>
                                                     </div>
                                                     <Badge variant="outline" className={`text-[10px] py-0.5 px-2 h-5 border-0 font-semibold capitalize flex-shrink-0 ${bid.status === 'submitted' ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-600'
                                                         }`}>
@@ -1152,7 +1181,7 @@ const TenderDetails = () => {
                                                     <Button
                                                         size="sm"
                                                         className="bg-white text-blue-600 border border-blue-200 hover:bg-blue-600 hover:text-white hover:border-blue-600 shadow-sm rounded-lg transition-all duration-300 font-medium px-3 sm:px-4 text-xs sm:text-sm w-full sm:w-auto"
-                                                        onClick={() => navigate(`/admin/bids/${bid.id}`)}
+                                                        onClick={() => navigate(getBidDetailsPath(bid.id))}
                                                     >
                                                         {t('contractor.tenders.view')} <Eye className="ml-1.5 h-3.5 w-3.5 flex-shrink-0" />
                                                     </Button>

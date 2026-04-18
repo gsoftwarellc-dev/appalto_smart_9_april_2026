@@ -17,10 +17,18 @@ use Illuminate\Notifications\Messages\DatabaseMessage;
 class BidController extends Controller
 {
     /**
-     * Get all bids for a tender (admin only)
+     * Get all bids for a tender. Admins and platform owners can inspect bids;
+     * contractors can only see their own bids through myBids().
      */
-    public function forTender($tenderId)
+    public function forTender(Request $request, $tenderId)
     {
+        $user = $request->user();
+        if (!$user || !in_array($user->role, ['admin', 'owner'], true)) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        Tender::findOrFail($tenderId);
+
         $bids = Bid::with(['contractor', 'bidItems.boqItem'])
             ->where('tender_id', $tenderId)
             ->latest()
@@ -179,6 +187,10 @@ class BidController extends Controller
         
         // Authorization check (basic)
         $user = request()->user();
+        if (!$user || !in_array($user->role, ['admin', 'owner', 'contractor'], true)) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
         if ($user->role === 'contractor' && $bid->contractor_id !== $user->id) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }

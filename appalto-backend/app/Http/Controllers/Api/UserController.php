@@ -22,6 +22,13 @@ class UserController extends Controller
             $query->where('role', $request->role);
         }
 
+        if ($request->has('verified')) {
+            $verified = filter_var($request->verified, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+            if ($verified !== null) {
+                $query->where('verified', $verified);
+            }
+        }
+
         // Filter by status (we'll use a custom attribute or check specific fields)
         if ($request->has('status')) {
             // For now, we can add a status column later if needed
