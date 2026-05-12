@@ -14,11 +14,17 @@ const BackendApiService = {
 
     async register(userData) {
         const { data } = await apiClient.post('/register', userData);
-        if (data.token) {
-            localStorage.setItem('auth_token', data.token);
-            localStorage.setItem('appalto_user', JSON.stringify(data.user));
-        }
         return data.user;
+    },
+
+    async forgotPassword(email) {
+        const { data } = await apiClient.post('/forgot-password', { email });
+        return data;
+    },
+
+    async resetPassword(resetData) {
+        const { data } = await apiClient.post('/reset-password', resetData);
+        return data;
     },
 
     async logout() {
@@ -139,6 +145,11 @@ const BackendApiService = {
         return data.data;
     },
 
+    async deleteTender(id) {
+        const { data } = await apiClient.delete(`/tenders/${id}`);
+        return data;
+    },
+
     async unlockTender(id) {
         const { data } = await apiClient.post(`/tenders/${id}/unlock`);
         return data;
@@ -241,6 +252,11 @@ const BackendApiService = {
 
     async getOwnerRevenue() {
         const { data } = await apiClient.get('/owner/revenue');
+        return data;
+    },
+
+    async getOwnerTransactions(page = 1, perPage = 10) {
+        const { data } = await apiClient.get(`/owner/transactions?page=${page}&per_page=${perPage}`);
         return data;
     },
 
@@ -354,6 +370,11 @@ const BackendApiService = {
         return data;
     },
 
+    async deleteUser(userId) {
+        const { data } = await apiClient.delete(`/owner/users/${userId}`);
+        return data;
+    },
+
     async getUserStatistics() {
         const { data } = await apiClient.get('/owner/statistics');
         return data;
@@ -369,35 +390,23 @@ const BackendApiService = {
         return data;
     },
 
-    async downloadDocument(id, filename) {
-        try {
-            const response = await apiClient.get(`/documents/${id}/download`, {
-                responseType: 'blob'
-            });
-
-            // Create blob link to download
-            const url = window.URL.createObjectURL(new Blob([response.data]));
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', filename); // or any other extension
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-            window.URL.revokeObjectURL(url);
-            return true;
-        } catch (error) {
-            console.error("Download failed", error);
-            throw error;
-        }
-    },
-
     async getBillingOverview() {
         const { data } = await apiClient.get('/billing');
         return data;
     },
 
-    async purchaseCredits(pack) {
-        const { data } = await apiClient.post('/billing/purchase', { pack });
+    async purchaseCredits(payload) {
+        const { data } = await apiClient.post('/billing/purchase', payload);
+        return data;
+    },
+
+    async createStripeCheckout(credits) {
+        const { data } = await apiClient.post('/stripe/checkout', { credits });
+        return data;
+    },
+
+    async verifyStripeSession(sessionId) {
+        const { data } = await apiClient.get('/stripe/verify', { params: { session_id: sessionId } });
         return data;
     },
 

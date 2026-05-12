@@ -7,6 +7,17 @@ use Illuminate\Foundation\Http\FormRequest;
 class LoginRequest extends FormRequest
 {
     /**
+     * Prepare the data for validation.
+     */
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'email' => strtolower(trim((string) $this->input('email'))),
+            'role' => trim((string) $this->input('role')),
+        ]);
+    }
+
+    /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
@@ -22,8 +33,8 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => 'required|email',
-            'password' => 'required|string',
+            'email' => 'required|string|email|max:255',
+            'password' => 'required|string|max:255',
             'role' => 'required|in:admin,contractor,owner',
         ];
     }

@@ -4,6 +4,7 @@
         "logout": "Logout",
         "createTender": "Create New Tender",
         "language": "Language",
+        "home": "Home",
         "na": "N/A"
     },
     "sidebar": {
@@ -36,8 +37,23 @@
         "noAccount": "Don't have an account?",
         "haveAccount": "Already have an account?",
         "forgotPassword": "Forgot Password?",
+        "forgotPasswordSubtitle": "Enter your email and we will send you a reset link.",
+        "sendResetLink": "Send Reset Link",
+        "sendingResetLink": "Sending...",
+        "passwordResetLinkSent": "If an account exists for this email, a password reset link has been sent.",
+        "localResetLink": "Open local reset link",
+        "localResetLinkNote": "Local development mode is using the log mailer, so no real email is sent. Configure SMTP to send this link to the user's inbox.",
+        "resetPassword": "Reset Password",
+        "resetPasswordSubtitle": "Choose a new password for your account.",
+        "resetPasswordButton": "Reset Password",
+        "resettingPassword": "Resetting...",
+        "passwordResetSuccess": "Password reset successfully. Please log in with your new password.",
+        "backToLogin": "Back to login",
         "loginButton": "Enter Dashboard",
         "loggingIn": "Entering...",
+        "showPassword": "Show password",
+        "hidePassword": "Hide password",
+        "passwordRequirement": "Use at least 8 characters with uppercase, lowercase, and a number.",
         "registerButton": "Create Account",
         "registering": "Creating Account...",
         "welcomeBack": "Welcome Back",
@@ -72,10 +88,23 @@
         "orderNumber": "Number",
         "mandatoryForRegistrationNote": "These data are mandatory for registration as only condominium administrators and delegated technicians can register.",
         "addSameMandatoryProfileData": "Add the same mandatory profile data. Otherwise complete them later to make the profile operational.",
+        "registrationSuccess": "Registration successful. Please log in.",
+        "preparingDashboard": "Your account has been created. We are preparing your dashboard now.",
+        "redirectingToLogin": "Your account has been created. Redirecting you to the login page.",
+        "registeringSecurely": "Finalizing your secure session...",
         "errors": {
             "passwordMatch": "Passwords do not match",
             "passwordLength": "Password must be at least 8 characters",
+            "passwordComplexity": "Password must be at least 8 characters and include uppercase, lowercase, and a number.",
             "requiredFields": "Please fill in all required fields",
+            "correctHighlightedFields": "Please correct the highlighted fields.",
+            "invalidEmail": "Enter a valid email address",
+            "invalidRole": "Select a valid dashboard type",
+            "tooManyAttempts": "Too many attempts. Please wait a minute and try again.",
+            "maxLength": "Use {{count}} characters or fewer.",
+            "invalidResetLink": "This password reset link is invalid or missing required information.",
+            "passwordResetRequestFailed": "Could not send the reset link. Please try again.",
+            "passwordResetFailed": "Could not reset the password. Please try again.",
             "vat11Required": "P.iva must be exactly 11 digits.",
             "loginFailed": "Login failed",
             "registrationFailed": "Registration failed"
@@ -113,8 +142,8 @@
             "object": "Subject",
             "address": "Address",
             "addressPlaceholder": "Street, square...",
-            "city": "City",
-            "cityPlaceholder": "City...",
+            "region": "Region",
+            "regionPlaceholder": "Select an Italian region...",
             "deadline": "Offer deadline",
             "estimatedAmount": "Estimated amount",
             "uploadBoq": "Upload BOQ / Bill of quantities",
@@ -207,6 +236,7 @@
             "subtitle": "Detailed information and activity history",
             "activate": "Activate User",
             "suspend": "Suspend User",
+            "delete": "Delete User",
             "userInfo": "User Information",
             "name": "Name",
             "email": "Email",
@@ -244,6 +274,10 @@
             "suspendError": "Failed to suspend user",
             "activateSuccess": "User activated successfully",
             "activateError": "Failed to activate user",
+            "confirmDelete": "This will permanently delete {{name}} and all of this user's platform data. This action cannot be undone.",
+            "deleteConfirmationMismatch": "Deletion cancelled. Type DELETE exactly to confirm.",
+            "deleteSuccess": "User and related data deleted successfully",
+            "deleteError": "Failed to delete user",
             "loadError": "Failed to load profile"
         },
         "profile": {
@@ -481,6 +515,7 @@
             "title": "Billing & Payments",
             "subtitle": "Manage your payment methods, view transaction history, and purchase credits.",
             "balanceTitle": "Available Balance",
+            "availableCredit": "Available Credit",
             "buy50": "Buy 50 Credits (€50)",
             "buy150": "Buy 150 Credits (€120)",
             "paymentMethods": "Payment Methods",
@@ -493,7 +528,9 @@
             "noTxnDesc": "Your credit purchases and tender unlocks will appear here.",
             "credits": "Credits",
             "purchaseSuccess": "Credits purchased successfully!",
-            "purchaseError": "Failed to purchase credits."
+            "purchaseError": "Failed to purchase credits.",
+            "buyNow": "Buy Now",
+            "redirecting": "Redirecting..."
         },
         "activeTenders": "Active Tenders",
         "myBids": "My Bids",
@@ -555,7 +592,7 @@
             "subtitle": "Explore and participate in new tender opportunities.",
             "browseTenders": "Browse Tenders",
             "searchPlaceholder": "Search tenders...",
-            "allLocations": "All Locations",
+            "allLocations": "All Regions",
             "open": "Open",
             "urgent": "Urgent",
             "locked": "Locked",
@@ -579,7 +616,7 @@
             "moreThan": "More than",
             "clientNameLabel": "Client name",
             "addressLabel": "Address",
-            "cityLabel": "City",
+            "cityLabel": "Region",
             "description": "Description",
             "estimatedBudget": "Estimated Budget",
             "boqTitle": "Bill of Quantities (BOQ)",
@@ -710,7 +747,8 @@
             "tenders": "Tender Management",
             "revenue": "Revenue",
             "configuration": "Configuration",
-            "notifications": "Notifications"
+            "notifications": "Notifications",
+            "profile": "Profile"
         },
         "notifications": {
             "title": "Notifications",
@@ -736,12 +774,46 @@
             "save": "Save Configuration",
             "saving": "Saving...",
             "saveSuccess": "System configuration updated successfully.",
-            "saveError": "Failed to update configuration."
+            "saveError": "Failed to update configuration.",
+            "creditPricing": "Credit Pricing",
+            "creditPricingDesc": "Set how many credits a contractor gets per €1",
+            "creditsPerEuro": "Credits per €1",
+            "credits": "credits",
+            "contractorReceives": "Contractors will receive <1>{{credits}}</1> credits for every €1 they buy.",
+            "tenderUnlockCredits": "Tender Unlock Credits",
+            "tenderUnlockCreditsDesc": "Define how many credits will be required from a contractor to bid on a project.",
+            "stripeGateway": "Stripe Payment Gateway",
+            "stripeGatewayDesc": "Connect your Stripe account to accept payments",
+            "connected": "Connected",
+            "notConnected": "Not connected",
+            "publishableKey": "Publishable Key",
+            "secretKey": "Secret Key",
+            "getStripeKeys": "Get your API keys from Stripe Dashboard",
+            "testMode": "Test Mode",
+            "testModeDesc": "Use Stripe test keys for development. No real charges.",
+            "connectStripe": "Connect Stripe Account",
+            "connectingStripe": "Connecting to Stripe...",
+            "stripeConnected": "Stripe Connected Successfully",
+            "runningTestMode": "Running in Test Mode",
+            "runningLiveMode": "Running in Live Mode",
+            "webhookEndpoint": "Webhook Endpoint",
+            "addWebhook": "Add this URL to your Stripe Dashboard → Webhooks",
+            "disconnectStripe": "Disconnect Stripe",
+            "disconnectConfirm": "Are you sure you want to disconnect Stripe? Payments will stop working.",
+            "pleaseEnterKeys": "Please enter both Publishable Key and Secret Key.",
+            "changesSaved": "Changes saved successfully",
+            "unsavedChanges": "You have unsaved changes",
+            "discard": "Discard",
+            "budgetLess50k": "Less than €50K",
+            "budget50k100k": "€50K – €100K",
+            "budget100k250k": "€100K – €250K",
+            "budgetMore250k": "More than €250K"
         },
         "billing": {
             "title": "Billing & Payments",
             "subtitle": "Manage your payment methods, view transaction history, and purchase credits.",
             "balanceTitle": "Available Balance",
+            "availableCredit": "Available Credit",
             "buy50": "Buy 50 Credits (€50)",
             "buy150": "Buy 150 Credits (€120)",
             "paymentMethods": "Payment Methods",
@@ -852,7 +924,8 @@
             },
             "tabs": {
                 "all": "All",
-                "unverified": "Unverified"
+                "unverified": "Unverified",
+                "suspended": "Suspended"
             }
         },
         "userProfile": {
@@ -1025,6 +1098,83 @@
             "terms": "Terms of Service",
             "country": "Italy",
             "methodTag": "Digital Method"
+        },
+        "legal": {
+            "about": {
+                "title": "About Us",
+                "sections": [
+                    {
+                        "heading": "Who we are",
+                        "body": "Appalto Smart is a digital platform created to help building managers, delegated technicians, and construction companies manage private tender processes with greater clarity, speed, and traceability."
+                    },
+                    {
+                        "heading": "What we do",
+                        "body": "The platform supports tender publication, contractor access, document management, bid submission, comparison of offers, and communication between participating parties."
+                    },
+                    {
+                        "heading": "Our standard",
+                        "body": "We aim to provide a professional, transparent, and organized environment. Users are responsible for checking the accuracy of their own company data, tender documents, bids, and uploaded files before submitting them."
+                    },
+                    {
+                        "heading": "Payments and credits",
+                        "body": "Contractor participation may require credits or platform fees. Purchased credits, access fees, and participation fees are non-refundable once purchased or used, except where a refund is required by applicable law."
+                    }
+                ]
+            },
+            "privacy": {
+                "title": "Privacy Policy",
+                "sections": [
+                    {
+                        "heading": "Information we collect",
+                        "body": "We may collect account details, company information, contact data, tender documents, bid documents, usage records, transaction records, and technical information needed to operate and secure the platform."
+                    },
+                    {
+                        "heading": "How information is used",
+                        "body": "Information is used to create and manage accounts, publish and manage tenders, process bids, provide notifications, support customer requests, maintain platform security, and improve service quality."
+                    },
+                    {
+                        "heading": "Sharing and visibility",
+                        "body": "Tender and bid information may be visible to the relevant authorized users involved in a tender process. We do not sell personal data. Data may be shared with service providers only when needed for hosting, payments, analytics, support, compliance, or security."
+                    },
+                    {
+                        "heading": "Retention and security",
+                        "body": "We retain information for as long as needed to provide the service, comply with legal obligations, resolve disputes, and maintain business records. We use reasonable technical and organizational measures to protect platform data."
+                    },
+                    {
+                        "heading": "User responsibility",
+                        "body": "Users must not upload confidential, unlawful, or unnecessary personal information unless it is required for the tender process. Users should ensure they have the right to share all uploaded documents and data."
+                    }
+                ]
+            },
+            "terms": {
+                "title": "Terms of Service",
+                "sections": [
+                    {
+                        "heading": "Use of the platform",
+                        "body": "By using Appalto Smart, users agree to provide accurate information, keep login credentials secure, use the platform lawfully, and avoid actions that may disrupt, misuse, or compromise the service."
+                    },
+                    {
+                        "heading": "Tender and bid responsibility",
+                        "body": "Building managers, technicians, and contractors are responsible for the content, accuracy, completeness, and legality of tenders, bids, prices, documents, signatures, and communications submitted through the platform."
+                    },
+                    {
+                        "heading": "No guarantee of award or outcome",
+                        "body": "Appalto Smart provides digital tools for managing tender workflows. We do not guarantee that a tender will receive bids, that a contractor will win a tender, or that any commercial agreement will be completed."
+                    },
+                    {
+                        "heading": "Non-refundable payments",
+                        "body": "All credit purchases, tender unlocks, access fees, platform fees, and participation fees are final and non-refundable after purchase or use. Refunds are provided only where required by applicable law or where Appalto Smart confirms a billing error."
+                    },
+                    {
+                        "heading": "Service changes",
+                        "body": "We may update, improve, limit, suspend, or discontinue parts of the platform when needed for maintenance, security, compliance, product development, or business reasons."
+                    },
+                    {
+                        "heading": "Limitation of liability",
+                        "body": "To the maximum extent permitted by law, Appalto Smart is not liable for indirect losses, lost profits, missed business opportunities, user-submitted errors, third-party actions, or decisions made based on tender or bid information."
+                    }
+                ]
+            }
         }
     },
     "charts": {

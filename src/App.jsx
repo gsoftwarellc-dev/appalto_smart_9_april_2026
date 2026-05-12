@@ -9,6 +9,8 @@ import Layout from './components/layout/Layout';
 // Pages
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
+import ForgotPassword from './pages/auth/ForgotPassword';
+import ResetPassword from './pages/auth/ResetPassword';
 import LandingPage from './pages/LandingPage';
 
 // Admin Pages
@@ -44,6 +46,8 @@ import MyBids from './pages/contractor/MyBids';
 import Profile from './pages/contractor/Profile';
 import DocumentCenter from './pages/contractor/DocumentCenter';
 import Billing from './pages/contractor/Billing';
+import PaymentSuccess from './pages/contractor/PaymentSuccess';
+import PaymentCancel from './pages/contractor/PaymentCancel';
 
 function App() {
   return (
@@ -55,6 +59,8 @@ function App() {
               {/* Public Routes */}
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/" element={<LandingPage />} />
 
               {/* Protected Routes */}
@@ -89,6 +95,8 @@ function App() {
                     <Route path="/contractor/notifications" element={<Notifications />} />
                     <Route path="/contractor/billing" element={<Billing />} />
                     <Route path="/contractor/profile" element={<Profile />} />
+                    <Route path="/payment/success" element={<PaymentSuccess />} />
+                    <Route path="/payment/cancel" element={<PaymentCancel />} />
                     <Route path="/contractor/tenders/:id" element={<TenderDetails />} />
                     {/* Alias routes requested by client for quoting view */}
                     <Route path="/contractor/appalti/:id/preventivo" element={<TenderDetails />} />
@@ -105,12 +113,14 @@ function App() {
                   <Route path="/owner/users" element={<UserManagement />} />
                   <Route path="/owner/users/:id" element={<UserProfile />} />
                   <Route path="/owner/tenders" element={<TendersList />} />
+                  <Route path="/owner/edit-tender/:id" element={<CreateTender />} />
                   <Route path="/owner/tenders/:id" element={<TenderDetails />} />
                   <Route path="/owner/bids/:id" element={<BidDetails />} />
                   <Route path="/owner/revenue" element={<RevenueDashboard />} />
                   <Route path="/owner/audit" element={<AuditLog />} />
                   <Route path="/owner/config" element={<Configuration />} />
                   <Route path="/owner/notifications" element={<NotificationControl />} />
+                  <Route path="/owner/profile" element={<AdminProfile />} />
                 </Route>
               </Route>
 

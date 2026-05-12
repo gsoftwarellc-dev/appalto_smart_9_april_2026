@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use App\Services\TenderCreditRequirementService;
 
 class TenderResource extends JsonResource
 {
@@ -15,6 +16,7 @@ class TenderResource extends JsonResource
     public function toArray(Request $request): array
     {
         $boqDoc = $this->documents()->where('document_type', 'boq_pdf')->latest()->first();
+        $unlockCost = app(TenderCreditRequirementService::class)->calculateForTender($this->resource);
 
         return [
             'id' => $this->id,
@@ -25,6 +27,8 @@ class TenderResource extends JsonResource
             'status' => $this->status,
             'budget' => $this->budget, // Keep as string for range display (0-50000, 50000-100000, etc.)
             'isUnlocked' => $this->isUnlockedBy($request->user()),
+            'unlockCredits' => $unlockCost,
+            'unlock_credits' => $unlockCost,
             'boq_file_url' => $boqDoc?->url,
             'boq_file_name' => $boqDoc?->file_name ?? $boqDoc?->original_filename,
             'boq_file_size_kb' => $boqDoc && $boqDoc->file_size ? round($boqDoc->file_size / 1024, 1) : null,

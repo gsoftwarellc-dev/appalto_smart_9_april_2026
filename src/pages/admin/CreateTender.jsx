@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../../components/ui/Button';
@@ -6,6 +6,8 @@ import { Input } from '../../components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
 import { Upload, Loader2 } from 'lucide-react';
 import BackendApiService from '../../services/backendApi';
+import { useAuth } from '../../context/AuthContext';
+import { ITALIAN_REGIONS } from '../../constants/italianRegions';
 
 const getBackendBaseUrl = () => {
     const api = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
@@ -20,17 +22,36 @@ const resolveBoqUrl = (rawUrl) => {
     return `${base}${rawUrl.startsWith('/') ? '' : '/'}${rawUrl}`;
 };
 
+const parseTenderLocation = (location) => {
+    const value = (location || '').trim();
+    const lastComma = value.lastIndexOf(', ');
+
+    if (lastComma > 0) {
+        return {
+            address: value.slice(0, lastComma).trim(),
+            region: value.slice(lastComma + 2).trim(),
+        };
+    }
+
+    return {
+        address: ITALIAN_REGIONS.includes(value) ? '' : value,
+        region: ITALIAN_REGIONS.includes(value) ? value : '',
+    };
+};
+
+const getDefaultDeadline = () => {
+    const date = new Date();
+    date.setDate(date.getDate() + 15);
+    return date.toISOString().split('T')[0];
+};
+
 const CreateTender = () => {
     const { t } = useTranslation();
     const navigate = useNavigate();
+    const { user } = useAuth();
     const { id } = useParams(); // For edit mode
     const isEditMode = !!id;
-
-    const getDefaultDeadline = () => {
-        const date = new Date();
-        date.setDate(date.getDate() + 15);
-        return date.toISOString().split('T')[0];
-    };
+    const basePath = user?.role === 'owner' ? '/owner' : '/admin';
 
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
@@ -43,7 +64,7 @@ const CreateTender = () => {
         deadline: getDefaultDeadline(),
         budget: '',
         location: '',
-        city: '',
+        region: '',
         status: 'published'
     });
 
@@ -56,28 +77,18 @@ const CreateTender = () => {
     const [uploadedBoqPreviewUrl, setUploadedBoqPreviewUrl] = useState(null);
     const [existingBoqUrl, setExistingBoqUrl] = useState(null); // from backend when editing
 
-    // Load tender data if in edit mode
-    useEffect(() => {
-        if (isEditMode) {
-            loadTenderData();
-        }
-    }, [id]);
-
-    const loadTenderData = async () => {
+    const loadTenderData = useCallback(async () => {
         try {
             setLoading(true);
             const tender = await BackendApiService.getTenderById(id);
-            const loc = tender.location || '';
-            const lastComma = loc.lastIndexOf(', ');
-            const addressPart = lastComma > 0 ? loc.slice(0, lastComma).trim() : loc;
-            const cityPart = lastComma > 0 ? loc.slice(lastComma + 2).trim() : '';
+            const parsedLocation = parseTenderLocation(tender.location);
             setFormData({
                 title: tender.title || '',
                 description: tender.description || '',
                 deadline: tender.deadline ? tender.deadline.split('T')[0] : getDefaultDeadline(),
                 budget: tender.budget || '',
-                location: addressPart,
-                city: cityPart,
+                location: parsedLocation.address,
+                region: parsedLocation.region,
                 status: tender.status || 'draft'
             });
 
@@ -105,7 +116,14 @@ const CreateTender = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [id]);
+
+    // Load tender data if in edit mode
+    useEffect(() => {
+        if (isEditMode) {
+            loadTenderData();
+        }
+    }, [isEditMode, loadTenderData]);
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -117,18 +135,6 @@ const CreateTender = () => {
 
     // BOQ Management (items come only from PDF extraction)
     const [boqItems, setBoqItems] = useState([]);
-
-    const removeBoqItem = (index) => {
-        const newItems = [...boqItems];
-        newItems.splice(index, 1);
-        setBoqItems(newItems);
-    };
-
-    const handleBoqChange = (index, field, value) => {
-        const newItems = [...boqItems];
-        newItems[index][field] = value;
-        setBoqItems(newItems);
-    };
 
     // AI Extraction Logic
     const pollExtractionStatus = async (extractionId) => {
@@ -231,10 +237,10 @@ const CreateTender = () => {
             setError(null);
             setSuccess(null);
 
-            const fullLocation = [formData.location, formData.city].filter(Boolean).join(', ');
             const tenderData = {
                 ...formData,
-                location: fullLocation,
+                location: formData.location.trim(),
+                region: formData.region,
                 budget: formData.budget,
                 boq_items: boqItems.map((item, index) => ({
                     ...item,
@@ -256,7 +262,7 @@ const CreateTender = () => {
 
             // Redirect after short delay
             setTimeout(() => {
-                navigate('/admin/tenders');
+                navigate(`${basePath}/tenders`);
             }, 1500);
         } catch (error) {
             console.error("Failed to save tender", error);
@@ -278,7 +284,7 @@ const CreateTender = () => {
             await BackendApiService.publishTender(id);
             setSuccess(t('admin.create.messages.successPublish'));
             setTimeout(() => {
-                navigate('/admin/tenders');
+                navigate(`${basePath}/tenders`);
             }, 1500);
         } catch (error) {
             console.error("Failed to publish tender", error);
@@ -332,7 +338,7 @@ const CreateTender = () => {
                             />
                         </div>
 
-                        {/* Address and City */}
+                        {/* Address and Region */}
                         <div className="grid gap-4 md:grid-cols-2">
                             <div>
                                 <label className="block text-sm font-bold mb-2">
@@ -348,15 +354,20 @@ const CreateTender = () => {
                             </div>
                             <div>
                                 <label className="block text-sm font-bold mb-2">
-                                    {t('admin.create.city')} <span className="text-red-500">*</span>
+                                    {t('admin.create.region')} <span className="text-red-500">*</span>
                                 </label>
-                                <Input
-                                    name="city"
-                                    value={formData.city}
+                                <select
+                                    name="region"
+                                    value={formData.region}
                                     onChange={handleChange}
-                                    placeholder={t('admin.create.cityPlaceholder')}
+                                    className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                                     required
-                                />
+                                >
+                                    <option value="" disabled>{t('admin.create.regionPlaceholder')}</option>
+                                    {ITALIAN_REGIONS.map((region) => (
+                                        <option key={region} value={region}>{region}</option>
+                                    ))}
+                                </select>
                             </div>
                         </div>
 
@@ -524,7 +535,7 @@ const CreateTender = () => {
                             <Button
                                 type="button"
                                 variant="outline"
-                                onClick={() => navigate('/admin/tenders')}
+                                onClick={() => navigate(`${basePath}/tenders`)}
                                 disabled={saving}
                             >
                                 {t('admin.create.cancel')}

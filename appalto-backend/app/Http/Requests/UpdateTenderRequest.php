@@ -3,15 +3,39 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateTenderRequest extends FormRequest
 {
+    private const ITALIAN_REGIONS = [
+        'Abruzzo',
+        'Basilicata',
+        'Calabria',
+        'Campania',
+        'Emilia-Romagna',
+        'Friuli Venezia Giulia',
+        'Lazio',
+        'Liguria',
+        'Lombardia',
+        'Marche',
+        'Molise',
+        'Piemonte',
+        'Puglia',
+        'Sardegna',
+        'Sicilia',
+        'Toscana',
+        'Trentino-Alto Adige',
+        'Umbria',
+        "Valle d'Aosta",
+        'Veneto',
+    ];
+
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return $this->user() && $this->user()->isAdmin();
+        return $this->user() && in_array($this->user()->role, ['admin', 'owner']);
     }
 
     /**
@@ -25,6 +49,7 @@ class UpdateTenderRequest extends FormRequest
             'title' => 'sometimes|string|max:255',
             'description' => 'sometimes|string',
             'location' => 'sometimes|string|max:255',
+            'region' => ['sometimes', 'string', Rule::in(self::ITALIAN_REGIONS)],
             'deadline' => 'sometimes|date|after:now',
             // Budget is stored and displayed as a range string (e.g. "50000-100000")
             'budget' => 'sometimes|string|max:50',

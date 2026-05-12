@@ -23,6 +23,8 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'status',
+        'verified',
         'admin_sub_role',
         'order_college',
         'order_province',
@@ -61,6 +63,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'verified' => 'boolean',
         ];
     }
 
@@ -120,5 +123,10 @@ class User extends Authenticatable
     public function isContractor()
     {
         return $this->role === 'contractor';
+    }
+
+    public function isActive()
+    {
+        return ($this->status ?? 'active') === 'active';
     }
 }

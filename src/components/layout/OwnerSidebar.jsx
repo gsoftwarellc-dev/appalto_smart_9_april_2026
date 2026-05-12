@@ -9,7 +9,7 @@ import {
     DollarSign,
     Settings,
     Shield,
-    Bell,
+    User,
     LogOut
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
@@ -24,7 +24,7 @@ const OwnerSidebar = ({ isOpen, onClose }) => {
         { to: '/owner/tenders', icon: FileText, label: t('owner.sidebar.tenders') },
         { to: '/owner/revenue', icon: DollarSign, label: t('owner.sidebar.revenue') },
         { to: '/owner/config', icon: Settings, label: t('owner.sidebar.configuration') },
-        { to: '/owner/notifications', icon: Bell, label: t('owner.sidebar.notifications') },
+        { to: '/owner/profile', icon: User, label: t('owner.sidebar.profile') },
     ];
 
     return (

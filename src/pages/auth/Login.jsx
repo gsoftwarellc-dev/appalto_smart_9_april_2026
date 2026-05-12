@@ -5,7 +5,14 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '../../components/ui/Card';
-import { ChevronDown, Globe, AlertCircle } from 'lucide-react';
+import { ArrowLeft, ChevronDown, Eye, EyeOff, Globe, AlertCircle } from 'lucide-react';
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const DASHBOARD_PATHS = {
+    admin: '/admin',
+    contractor: '/contractor',
+    owner: '/owner',
+};
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -13,6 +20,7 @@ const Login = () => {
     const [role, setRole] = useState('contractor');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [showPassword, setShowPassword] = useState(true);
 
     const { login } = useAuth();
     const navigate = useNavigate();
@@ -29,32 +37,36 @@ const Login = () => {
         setError('');
         setLoading(true);
 
-        // Basic validation
-        if (!email || !password) {
+        const normalizedEmail = email.trim().toLowerCase();
+
+        if (!normalizedEmail || !password) {
             setError(t('auth.errors.requiredFields'));
             setLoading(false);
             return;
         }
 
+        if (!EMAIL_PATTERN.test(normalizedEmail)) {
+            setError(t('auth.errors.invalidEmail'));
+            setLoading(false);
+            return;
+        }
+
+        if (!DASHBOARD_PATHS[role]) {
+            setError(t('auth.errors.invalidRole'));
+            setLoading(false);
+            return;
+        }
+
         try {
-            const result = await login(email, password, role);
+            const result = await login(normalizedEmail, password, role);
             if (result.success) {
-                // Navigate based on role
                 const from = location.state?.from?.pathname;
-                if (from) {
-                    navigate(from);
-                } else if (role === 'admin') {
-                    navigate('/admin');
-                } else if (role === 'owner') {
-                    navigate('/owner');
-                } else {
-                    navigate('/contractor');
-                }
+                const defaultPath = DASHBOARD_PATHS[role];
+                navigate(from?.startsWith(defaultPath) ? from : defaultPath, { replace: true });
             } else {
                 setError(result.message || t('auth.errors.loginFailed'));
             }
-        } catch (err) {
-            console.error(err);
+        } catch {
             setError(t('auth.errors.loginFailed'));
         } finally {
             setLoading(false);
@@ -63,6 +75,13 @@ const Login = () => {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-indigo-50 p-4 relative">
+            <div className="absolute top-4 left-4">
+                <Link to="/" className="inline-flex h-8 items-center justify-center gap-2 rounded-md bg-white/50 px-3 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400">
+                    <ArrowLeft className="h-4 w-4" />
+                    <span>{t('common.home')}</span>
+                </Link>
+            </div>
+
             <div className="absolute top-4 right-4">
                 <Button variant="ghost" size="sm" onClick={toggleLanguage} className="flex items-center gap-2 bg-white/50 hover:bg-white shadow-sm">
                     <Globe className="h-4 w-4" />
@@ -80,7 +99,7 @@ const Login = () => {
                 </CardHeader>
 
                 <CardContent>
-                    <form onSubmit={handleLogin} className="space-y-5">
+                    <form onSubmit={handleLogin} className="space-y-5" noValidate>
                         {/* Role Selection */}
                         <div className="space-y-2">
                             <label className="text-sm font-medium leading-none text-gray-700">
@@ -88,8 +107,11 @@ const Login = () => {
                             </label>
                             <div className="relative">
                                 <select
+                                    name="role"
                                     value={role}
                                     onChange={(e) => setRole(e.target.value)}
+                                    disabled={loading}
+                                    required
                                     className="flex h-12 w-full items-center justify-between rounded-md border border-gray-300 bg-white px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 appearance-none"
                                 >
                                     <option value="contractor">{t('auth.contractor')}</option>
@@ -107,32 +129,58 @@ const Login = () => {
                             </label>
                             <Input
                                 type="email"
+                                name="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 placeholder="your@email.com"
+                                autoComplete="email"
+                                inputMode="email"
                                 className="h-12"
+                                disabled={loading}
                                 required
                             />
                         </div>
 
                         {/* Password Input */}
                         <div className="space-y-2">
-                            <label className="text-sm font-medium leading-none text-gray-700">
-                                {t('auth.password')}
-                            </label>
-                            <Input
-                                type="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                placeholder="••••••••"
-                                className="h-12"
-                                required
-                            />
+                            <div className="flex items-center justify-between gap-3">
+                                <label className="text-sm font-medium leading-none text-gray-700">
+                                    {t('auth.password')}
+                                </label>
+                                <Link to="/forgot-password" className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline">
+                                    {t('auth.forgotPassword')}
+                                </Link>
+                            </div>
+                            <div className="relative">
+                                <Input
+                                    type={showPassword ? 'text' : 'password'}
+                                    name="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    placeholder="••••••••"
+                                    autoComplete="current-password"
+                                    maxLength={255}
+                                    className="h-12 pr-11"
+                                    disabled={loading}
+                                    required
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword((value) => !value)}
+                                    className="absolute right-2 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 disabled:pointer-events-none disabled:opacity-50"
+                                    aria-label={showPassword ? t('auth.hidePassword') : t('auth.showPassword')}
+                                    aria-pressed={showPassword}
+                                    title={showPassword ? t('auth.hidePassword') : t('auth.showPassword')}
+                                    disabled={loading}
+                                >
+                                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                </button>
+                            </div>
                         </div>
 
                         {/* Error Message */}
                         {error && (
-                            <div className="flex items-center gap-2 p-3 text-sm text-red-800 bg-red-50 border border-red-200 rounded-md">
+                            <div className="flex items-center gap-2 p-3 text-sm text-red-800 bg-red-50 border border-red-200 rounded-md" role="alert" aria-live="polite">
                                 <AlertCircle className="h-4 w-4 flex-shrink-0" />
                                 <span>{error}</span>
                             </div>
@@ -161,4 +209,3 @@ const Login = () => {
 };
 
 export default Login;
-

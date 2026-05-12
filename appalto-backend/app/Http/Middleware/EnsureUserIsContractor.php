@@ -15,7 +15,7 @@ class EnsureUserIsContractor
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!$request->user() || !$request->user()->isContractor()) {
+        if (!$request->user() || !$request->user()->isActive() || !$request->user()->isContractor()) {
             return response()->json([
                 'message' => 'Unauthorized. Contractor access required.'
             ], 403);

@@ -7,6 +7,7 @@ use App\Http\Requests\StoreTenderRequest;
 use App\Http\Requests\UpdateTenderRequest;
 use App\Http\Resources\TenderResource;
 use App\Models\Tender;
+use App\Services\TenderCreditRequirementService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -30,6 +31,11 @@ class TenderController extends Controller
             }]);
         }
 
+        // Admins only see their own tenders
+        if ($request->user() && $request->user()->role === 'admin') {
+            $query->where('created_by', $request->user()->id);
+        }
+
         // Filtering
         if ($request->has('search') && $request->search) {
             $search = $request->search;
@@ -41,7 +47,7 @@ class TenderController extends Controller
         }
 
         if ($request->has('location') && $request->location && $request->location !== 'All') {
-            $query->where('location', $request->location);
+            $query->where('location', 'like', "%{$request->location}%");
         }
 
         if ($request->has('status') && $request->status && $request->status !== 'All') {
@@ -84,7 +90,7 @@ class TenderController extends Controller
     /**
      * Unlock a tender for the authenticated contractor
      */
-    public function unlock(Request $request, $id)
+    public function unlock(Request $request, $id, TenderCreditRequirementService $creditRequirementService)
     {
         $user = $request->user();
         $tender = Tender::findOrFail($id);
@@ -94,19 +100,20 @@ class TenderController extends Controller
              return response()->json(['message' => 'Tender already unlocked'], 200);
         }
 
-        // For demo/testing: ensure the user has a credit record and enough balance
+        $unlockCost = $creditRequirementService->calculateForTender($tender);
+
+        // Ensure the user has a credit record before checking the configured cost.
         if (!$user->credits) {
-            $user->credits()->create(['balance' => 200]);
-            $user->load('credits');
-        } elseif ($user->credits->balance < 50) {
-            $user->credits->update(['balance' => 200]);
+            $user->credits()->create(['balance' => 0]);
             $user->load('credits');
         }
 
-        $unlockCost = 50; // Hardcoded mechanism for now, could be on Tender model
-
         if ($user->credits->balance < $unlockCost) {
-            return response()->json(['message' => 'Insufficient credits'], 402);
+            return response()->json([
+                'message' => 'Insufficient credits',
+                'required_credits' => $unlockCost,
+                'current_balance' => $user->credits->balance,
+            ], 402);
         }
 
         try {
@@ -126,7 +133,10 @@ class TenderController extends Controller
                 $tender->unlocks()->attach($user->id, ['credits_spent' => $unlockCost]);
             });
 
-            return response()->json(['message' => 'Tender unlocked successfully']);
+            return response()->json([
+                'message' => 'Tender unlocked successfully',
+                'credits_spent' => $unlockCost,
+            ]);
 
         } catch (\Exception $e) {
             return response()->json(['message' => 'Unlock failed', 'error' => $e->getMessage()], 500);
@@ -138,20 +148,22 @@ class TenderController extends Controller
      */
     public function store(StoreTenderRequest $request)
     {
-        $tender = DB::transaction(function () use ($request) {
+        $data = $request->validated();
+
+        $tender = DB::transaction(function () use ($request, $data) {
             $tender = Tender::create([
-                'title' => $request->title,
-                'description' => $request->description,
-                'location' => $request->location,
-                'deadline' => $request->deadline,
-                'budget' => $request->budget,
+                'title' => $data['title'],
+                'description' => $data['description'],
+                'location' => $this->formatTenderLocation($data['location'], $data['region']),
+                'deadline' => $data['deadline'],
+                'budget' => $data['budget'],
                 'status' => 'published',
                 'created_by' => $request->user()->id,
                 'is_urgent' => $request->boolean('is_urgent', false),
             ]);
 
-            if ($request->has('boq_items')) {
-                foreach ($request->boq_items as $index => $item) {
+            if (isset($data['boq_items'])) {
+                foreach ($data['boq_items'] as $index => $item) {
                     $tender->boqItems()->create([
                         'description' => $item['description'],
                         'unit' => $item['unit'],
@@ -162,8 +174,8 @@ class TenderController extends Controller
                 }
             }
 
-            if ($request->filled('boq_document_id')) {
-                \App\Models\Document::where('id', $request->boq_document_id)
+            if (!empty($data['boq_document_id'])) {
+                \App\Models\Document::where('id', $data['boq_document_id'])
                     ->whereNull('tender_id')
                     ->update(['tender_id' => $tender->id]);
             }
@@ -205,20 +217,38 @@ class TenderController extends Controller
     public function update(UpdateTenderRequest $request, $id)
     {
         $tender = Tender::findOrFail($id);
+        $data = $request->validated();
         
-        DB::transaction(function () use ($tender, $request) {
-            $tender->update($request->validated());
+        DB::transaction(function () use ($tender, $request, $data) {
+            $updateData = $data;
+            unset($updateData['boq_items']);
+
+            if (array_key_exists('location', $data) || array_key_exists('region', $data)) {
+                [$currentAddress, $currentRegion] = $this->splitTenderLocation($tender->location);
+                $address = $data['location'] ?? $currentAddress;
+                $region = $data['region'] ?? $currentRegion;
+
+                if ($region) {
+                    $updateData['location'] = $this->formatTenderLocation($address, $region);
+                }
+            }
+
+            unset($updateData['region']);
+
+            if (!empty($updateData)) {
+                $tender->update($updateData);
+            }
             
             if ($request->has('is_urgent')) {
                 $tender->is_urgent = $request->boolean('is_urgent');
                 $tender->save();
             }
 
-            if ($request->has('boq_items')) {
+            if (isset($data['boq_items'])) {
                 // Delete existing items and recreate
                 $tender->boqItems()->delete();
                 
-                foreach ($request->boq_items as $index => $item) {
+                foreach ($data['boq_items'] as $index => $item) {
                     $tender->boqItems()->create([
                         'description' => $item['description'],
                         'unit' => $item['unit'],
@@ -231,6 +261,28 @@ class TenderController extends Controller
         });
 
         return new TenderResource($tender);
+    }
+
+    private function formatTenderLocation(string $address, string $region): string
+    {
+        return collect([trim($address), trim($region)])
+            ->filter()
+            ->implode(', ');
+    }
+
+    private function splitTenderLocation(?string $location): array
+    {
+        $location = trim((string) $location);
+        $lastComma = strrpos($location, ', ');
+
+        if ($lastComma === false) {
+            return [$location, ''];
+        }
+
+        return [
+            trim(substr($location, 0, $lastComma)),
+            trim(substr($location, $lastComma + 2)),
+        ];
     }
 
     /**
@@ -274,5 +326,37 @@ class TenderController extends Controller
         }
 
         return response()->json(['message' => 'BOQ items updated successfully']);
+    }
+
+    /**
+     * Delete a tender
+     */
+    public function destroy(Request $request, $id)
+    {
+        $tender = Tender::findOrFail($id);
+
+        // Only the creator can delete
+        if ($tender->created_by !== $request->user()->id && $request->user()->role !== 'owner') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        DB::transaction(function () use ($tender) {
+            // Delete related records
+            $tender->boqItems()->delete();
+            $tender->bids()->delete();
+            $tender->documents()->delete();
+
+            // Detach pivot relations
+            if (method_exists($tender, 'unlocks')) {
+                $tender->unlocks()->detach();
+            }
+            if (method_exists($tender, 'favoritedBy')) {
+                $tender->favoritedBy()->detach();
+            }
+
+            $tender->delete();
+        });
+
+        return response()->json(['message' => 'Tender deleted successfully']);
     }
 }

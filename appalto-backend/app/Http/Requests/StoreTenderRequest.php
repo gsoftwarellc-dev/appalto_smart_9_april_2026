@@ -3,16 +3,40 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreTenderRequest extends FormRequest
 {
+    private const ITALIAN_REGIONS = [
+        'Abruzzo',
+        'Basilicata',
+        'Calabria',
+        'Campania',
+        'Emilia-Romagna',
+        'Friuli Venezia Giulia',
+        'Lazio',
+        'Liguria',
+        'Lombardia',
+        'Marche',
+        'Molise',
+        'Piemonte',
+        'Puglia',
+        'Sardegna',
+        'Sicilia',
+        'Toscana',
+        'Trentino-Alto Adige',
+        'Umbria',
+        "Valle d'Aosta",
+        'Veneto',
+    ];
+
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
         // Only admins can create tenders
-        return $this->user() && $this->user()->isAdmin();
+        return $this->user() && in_array($this->user()->role, ['admin', 'owner']);
     }
 
     /**
@@ -26,6 +50,7 @@ class StoreTenderRequest extends FormRequest
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'location' => 'required|string|max:255',
+            'region' => ['required', 'string', Rule::in(self::ITALIAN_REGIONS)],
             'deadline' => 'required|date|after:now',
             // Budget is stored and displayed as a range string (e.g. "50000-100000")
             'budget' => 'required|string|max:50',

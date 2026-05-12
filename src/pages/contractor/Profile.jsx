@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../..
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Badge } from '../../components/ui/Badge';
-import { User, MapPin, Mail, Eye, X, CheckCircle, Star, Loader2, AlertCircle, FileText, Upload, Lock } from 'lucide-react';
+import { User, MapPin, Mail, Eye, EyeOff, X, CheckCircle, Star, Loader2, AlertCircle, FileText, Upload, Lock } from 'lucide-react';
 import BackendApiService from '../../services/backendApi';
 
 const getBackendBaseUrl = () => {
@@ -34,6 +34,9 @@ const Profile = () => {
     const [changingPassword, setChangingPassword] = useState(false);
     const [passwordSuccess, setPasswordSuccess] = useState(null);
     const [passwordError, setPasswordError] = useState(null);
+    const [showCurrentPw, setShowCurrentPw] = useState(false);
+    const [showNewPw, setShowNewPw] = useState(false);
+    const [showConfirmPw, setShowConfirmPw] = useState(false);
 
     // Profile Data State
     const [profile, setProfile] = useState({
@@ -602,34 +605,52 @@ const Profile = () => {
                                 )}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">{t('admin.profile.currentPassword')}</label>
-                                    <Input
-                                        type="password"
-                                        value={passwordForm.current}
-                                        onChange={(e) => setPasswordForm(p => ({ ...p, current: e.target.value }))}
-                                        placeholder="••••••••"
-                                        required
-                                    />
+                                    <div className="relative">
+                                        <Input
+                                            type={showCurrentPw ? 'text' : 'password'}
+                                            value={passwordForm.current}
+                                            onChange={(e) => setPasswordForm(p => ({ ...p, current: e.target.value }))}
+                                            placeholder="••••••••"
+                                            required
+                                            className="pr-10"
+                                        />
+                                        <button type="button" onClick={() => setShowCurrentPw(!showCurrentPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                            {showCurrentPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                        </button>
+                                    </div>
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">{t('admin.profile.newPassword')}</label>
-                                    <Input
-                                        type="password"
-                                        value={passwordForm.new}
-                                        onChange={(e) => setPasswordForm(p => ({ ...p, new: e.target.value }))}
-                                        placeholder="••••••••"
-                                        minLength={8}
-                                        required
-                                    />
+                                    <div className="relative">
+                                        <Input
+                                            type={showNewPw ? 'text' : 'password'}
+                                            value={passwordForm.new}
+                                            onChange={(e) => setPasswordForm(p => ({ ...p, new: e.target.value }))}
+                                            placeholder="••••••••"
+                                            minLength={8}
+                                            required
+                                            className="pr-10"
+                                        />
+                                        <button type="button" onClick={() => setShowNewPw(!showNewPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                            {showNewPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                        </button>
+                                    </div>
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">{t('admin.profile.confirmNewPassword')}</label>
-                                    <Input
-                                        type="password"
-                                        value={passwordForm.confirm}
-                                        onChange={(e) => setPasswordForm(p => ({ ...p, confirm: e.target.value }))}
-                                        placeholder="••••••••"
-                                        required
-                                    />
+                                    <div className="relative">
+                                        <Input
+                                            type={showConfirmPw ? 'text' : 'password'}
+                                            value={passwordForm.confirm}
+                                            onChange={(e) => setPasswordForm(p => ({ ...p, confirm: e.target.value }))}
+                                            placeholder="••••••••"
+                                            required
+                                            className="pr-10"
+                                        />
+                                        <button type="button" onClick={() => setShowConfirmPw(!showConfirmPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                            {showConfirmPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                        </button>
+                                    </div>
                                 </div>
                                 <Button type="submit" disabled={changingPassword}>
                                     {changingPassword ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}

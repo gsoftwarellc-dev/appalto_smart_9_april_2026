@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
-import { Loader2, User, Mail, Phone, Save, Building2, Hash, Lock } from 'lucide-react';
+import { Loader2, User, Mail, Phone, Save, Building2, Hash, Lock, Eye, EyeOff } from 'lucide-react';
 import BackendApiService from '../../services/backendApi';
 import { useAuth } from '../../context/AuthContext';
 
@@ -36,6 +36,9 @@ const AdminProfile = () => {
     const [changingPassword, setChangingPassword] = useState(false);
     const [passwordSuccess, setPasswordSuccess] = useState(null);
     const [passwordError, setPasswordError] = useState(null);
+    const [showCurrentPw, setShowCurrentPw] = useState(false);
+    const [showNewPw, setShowNewPw] = useState(false);
+    const [showConfirmPw, setShowConfirmPw] = useState(false);
 
     useEffect(() => {
         loadProfile();
@@ -75,18 +78,20 @@ const AdminProfile = () => {
         // All admin users: personal info required
         if (!profileData.name) missing.push(t('admin.profile.name'));
         if (!profileData.phone) missing.push(t('admin.profile.phone'));
-        if (!profileData.admin_sub_role) missing.push(t('admin.profile.roleLabel'));
 
-        // All admin users: professional fields required (role optional: Committente / Amm.re / Tecnico)
-        if (!profileData.vat_number || profileData.vat_number.length !== 11) missing.push(t('admin.profile.vatNumber'));
-        if (!profileData.address) missing.push(t('admin.profile.studioSection'));
-        if (!profileData.city) missing.push(t('admin.profile.placeholders.studioCity'));
-        if (!profileData.province) missing.push(t('admin.profile.placeholders.studioProvince'));
+        // Admin-specific professional fields (skip for owners)
+        if (user?.role !== 'owner') {
+            if (!profileData.admin_sub_role) missing.push(t('admin.profile.roleLabel'));
+            if (!profileData.vat_number || profileData.vat_number.length !== 11) missing.push(t('admin.profile.vatNumber'));
+            if (!profileData.address) missing.push(t('admin.profile.studioSection'));
+            if (!profileData.city) missing.push(t('admin.profile.placeholders.studioCity'));
+            if (!profileData.province) missing.push(t('admin.profile.placeholders.studioProvince'));
 
-        if (profileData.admin_sub_role === 'delegated_technician') {
-            if (!profileData.order_college) missing.push(t('auth.orderCollege'));
-            if (!profileData.order_province) missing.push(t('auth.orderProvince'));
-            if (!profileData.order_number) missing.push(t('auth.orderNumber'));
+            if (profileData.admin_sub_role === 'delegated_technician') {
+                if (!profileData.order_college) missing.push(t('auth.orderCollege'));
+                if (!profileData.order_province) missing.push(t('auth.orderProvince'));
+                if (!profileData.order_number) missing.push(t('auth.orderNumber'));
+            }
         }
 
         if (missing.length) {
@@ -256,7 +261,8 @@ const AdminProfile = () => {
                     </CardContent>
                 </Card>
 
-                {/* Profilo Amm.re Condominio o Tecnico Delegato – all fields required and editable */}
+                {/* Profilo Amm.re Condominio o Tecnico Delegato – only for admin users, not owners */}
+                {user?.role !== 'owner' && (
                 <Card>
                     <CardHeader>
                         <CardTitle>{sectionTitle}</CardTitle>
@@ -370,6 +376,7 @@ const AdminProfile = () => {
                             )}
                         </CardContent>
                     </Card>
+                )}
 
                 <div className="flex gap-3">
                     <Button type="submit" disabled={saving} className="flex items-center gap-2">
@@ -409,34 +416,52 @@ const AdminProfile = () => {
                         )}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">{t('admin.profile.currentPassword')}</label>
-                            <Input
-                                type="password"
-                                value={passwordForm.current}
-                                onChange={(e) => setPasswordForm(p => ({ ...p, current: e.target.value }))}
-                                placeholder="••••••••"
-                                required
-                            />
+                            <div className="relative">
+                                <Input
+                                    type={showCurrentPw ? 'text' : 'password'}
+                                    value={passwordForm.current}
+                                    onChange={(e) => setPasswordForm(p => ({ ...p, current: e.target.value }))}
+                                    placeholder="••••••••"
+                                    required
+                                    className="pr-10"
+                                />
+                                <button type="button" onClick={() => setShowCurrentPw(!showCurrentPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                    {showCurrentPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                </button>
+                            </div>
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">{t('admin.profile.newPassword')}</label>
-                            <Input
-                                type="password"
-                                value={passwordForm.new}
-                                onChange={(e) => setPasswordForm(p => ({ ...p, new: e.target.value }))}
-                                placeholder="••••••••"
-                                minLength={8}
-                                required
-                            />
+                            <div className="relative">
+                                <Input
+                                    type={showNewPw ? 'text' : 'password'}
+                                    value={passwordForm.new}
+                                    onChange={(e) => setPasswordForm(p => ({ ...p, new: e.target.value }))}
+                                    placeholder="••••••••"
+                                    minLength={8}
+                                    required
+                                    className="pr-10"
+                                />
+                                <button type="button" onClick={() => setShowNewPw(!showNewPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                    {showNewPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                </button>
+                            </div>
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">{t('admin.profile.confirmNewPassword')}</label>
-                            <Input
-                                type="password"
-                                value={passwordForm.confirm}
-                                onChange={(e) => setPasswordForm(p => ({ ...p, confirm: e.target.value }))}
-                                placeholder="••••••••"
-                                required
-                            />
+                            <div className="relative">
+                                <Input
+                                    type={showConfirmPw ? 'text' : 'password'}
+                                    value={passwordForm.confirm}
+                                    onChange={(e) => setPasswordForm(p => ({ ...p, confirm: e.target.value }))}
+                                    placeholder="••••••••"
+                                    required
+                                    className="pr-10"
+                                />
+                                <button type="button" onClick={() => setShowConfirmPw(!showConfirmPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                    {showConfirmPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                </button>
+                            </div>
                         </div>
                         <Button type="submit" disabled={changingPassword}>
                             {changingPassword ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}

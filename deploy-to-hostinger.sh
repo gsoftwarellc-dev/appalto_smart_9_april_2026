@@ -19,17 +19,8 @@ SSH_KEY="$HOME/.ssh/hostinger_appalto"
 [ -f "$SSH_KEY" ] || SSH_KEY="${SCRIPT_DIR}/.deploy-keys/hostinger"
 REMOTE="${SSH_USER}@${SSH_HOST}"
 
-REMOTE_PATH="${1:-domains/plum-cod-233835.hostingersite.com/public_html}"
-# API base URL for frontend build (no trailing slash). Derive from path if not given.
-if [[ -n "$2" ]]; then
-  API_BASE="${2%/}"
-else
-  if [[ "$REMOTE_PATH" == *"skyblue-dotterel"* ]]; then
-    API_BASE="https://skyblue-dotterel-801102.hostingersite.com"
-  else
-    API_BASE="https://plum-cod-233835.hostingersite.com"
-  fi
-fi
+REMOTE_PATH="${1:-domains/appaltosmart.it/public_html}"
+API_BASE="${2:-https://appaltosmart.it}"
 VITE_API_URL="${API_BASE}/api"
 
 echo "=== Deploy target ==="
@@ -76,20 +67,12 @@ BACKEND_DIR="$REMOTE_PATH/appalto-backend"
 # Single SSH session: run full deploy script on server (composer + artisan)
 SSH_CMD="ssh -p $SSH_PORT -o StrictHostKeyChecking=no"
 [ -f "$SSH_KEY" ] && SSH_CMD="$SSH_CMD -i $SSH_KEY"
-PLUM_BACKEND="domains/plum-cod-233835.hostingersite.com/public_html/appalto-backend"
-$SSH_CMD "$REMOTE" "bash -s" "$BACKEND_DIR" "$PLUM_BACKEND" <<'REMOTE_SCRIPT'
+$SSH_CMD "$REMOTE" "bash -s" "$BACKEND_DIR" <<'REMOTE_SCRIPT'
 set -e
 BACKEND_DIR="$1"
-PLUM_BACKEND="$2"
 cd "$BACKEND_DIR" || exit 1
 echo '>> Composer install'
 composer install --no-dev --no-interaction 2>/dev/null || true
-# If deploying to skyblue, copy .env from plum-cod and set APP_URL (so DB/cache work if shared)
-if [[ "$BACKEND_DIR" == *"skyblue-dotterel"* ]] && [[ -d "$HOME/$PLUM_BACKEND" ]]; then
-  echo '>> Copy .env from plum-cod and set APP_URL for skyblue'
-  cp "$HOME/$PLUM_BACKEND/.env" .env 2>/dev/null || true
-  sed -i 's|APP_URL=.*|APP_URL=https://skyblue-dotterel-801102.hostingersite.com|' .env 2>/dev/null || true
-fi
 echo '>> Artisan config:clear'
 php artisan config:clear 2>/dev/null || true
 echo '>> Artisan cache:clear'

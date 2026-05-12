@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\Contractor\StripeController;
 use App\Http\Controllers\Api\TenderController;
 use App\Http\Controllers\Api\BidController;
 use App\Http\Controllers\Api\DocumentController;
@@ -15,8 +16,13 @@ Route::post('/test-upload', function(\Illuminate\Http\Request $request) {
     return response()->json(['url' => \Illuminate\Support\Facades\Storage::url($path)]);
 });
 
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
+// Stripe webhook (no auth, verified by signature)
+Route::post('/stripe/webhook', [StripeController::class, 'webhook']);
+
+Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:10,1');
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
+Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:5,1');
+Route::post('/reset-password', [AuthController::class, 'resetPassword'])->middleware('throttle:5,1');
 
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
@@ -48,6 +54,7 @@ Route::middleware('auth:sanctum')->group(function () {
         // Tender Management
         Route::post('/tenders', [TenderController::class, 'store']);
         Route::put('/tenders/{id}', [TenderController::class, 'update']);
+        Route::delete('/tenders/{id}', [TenderController::class, 'destroy']);
         Route::post('/tenders/{id}/publish', [TenderController::class, 'publish']);
         Route::put('/tenders/{id}/boq-items', [TenderController::class, 'updateBoqItems']);
         
@@ -81,6 +88,10 @@ Route::middleware('auth:sanctum')->group(function () {
         // Billing & Credits
         Route::get('/billing', [\App\Http\Controllers\Api\Contractor\BillingController::class, 'index']);
         Route::post('/billing/purchase', [\App\Http\Controllers\Api\Contractor\BillingController::class, 'purchaseCredits']);
+
+        // Stripe
+        Route::post('/stripe/checkout', [StripeController::class, 'createCheckoutSession']);
+        Route::get('/stripe/verify', [StripeController::class, 'verifySession']);
         
         // Saved Tenders
         Route::post('/tenders/{id}/save', [TenderController::class, 'save']);
@@ -105,6 +116,7 @@ Route::middleware('auth:sanctum')->group(function () {
         // Owner Dashboard & Analytics
         Route::get('/owner/dashboard', [\App\Http\Controllers\Api\Owner\DashboardController::class, 'index']);
         Route::get('/owner/revenue', [\App\Http\Controllers\Api\Owner\DashboardController::class, 'revenue']);
+        Route::get('/owner/transactions', [\App\Http\Controllers\Api\Owner\DashboardController::class, 'transactions']);
 
         // Audit Logs
         Route::get('/owner/audit-logs', [\App\Http\Controllers\Api\Owner\AuditLogController::class, 'index']);
@@ -117,6 +129,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/owner/users/{id}', [\App\Http\Controllers\Api\Owner\UserController::class, 'show']);
         Route::put('/owner/users/{id}/suspend', [\App\Http\Controllers\Api\Owner\UserController::class, 'suspend']);
         Route::put('/owner/users/{id}/activate', [\App\Http\Controllers\Api\Owner\UserController::class, 'activate']);
+        Route::delete('/owner/users/{id}', [\App\Http\Controllers\Api\Owner\UserController::class, 'destroy']);
 
         // Notification Templates
         Route::get('/owner/notifications', [\App\Http\Controllers\Api\Owner\NotificationTemplateController::class, 'index']);

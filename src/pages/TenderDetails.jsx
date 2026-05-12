@@ -8,7 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card'
 import { Badge } from '../components/ui/Badge';
 import {
     AlertTriangle, FileText, Info, MapPin, Calendar, Clock, Lock, Download, CheckCircle,
-    Euro, Percent, Circle, Check, Eye, User, Zap, ChevronRight, ArrowRight, ArrowLeft, Upload
+    Euro, Percent, Circle, Check, Eye, User, Zap, ChevronRight, ArrowRight, ArrowLeft, Upload,
+    Pencil, Trash2
 } from 'lucide-react';
 import Modal from '../components/ui/Modal';
 import BackendApiService from '../services/backendApi';
@@ -179,13 +180,14 @@ const TenderDetails = () => {
     const [submittedBid, setSubmittedBid] = useState(null);
 
     // Modals
-    const [showUnlockModal, setShowUnlockModal] = useState(false);
+    const [unlocking, setUnlocking] = useState(false);
     const [showSubmitModal, setShowSubmitModal] = useState(false);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [showAiScan, setShowAiScan] = useState(false);
     const [activeBidTab, setActiveBidTab] = useState('manual'); // 'manual' or 'ai'
     const [errorMsg, setErrorMsg] = useState(null);
     const [publishing, setPublishing] = useState(false);
+    const [deleting, setDeleting] = useState(false);
 
     // Discount State
     const [discountValue, setDiscountValue] = useState('');
@@ -488,6 +490,46 @@ const TenderDetails = () => {
         }
     };
 
+    const handleDelete = async () => {
+        const confirmed = window.confirm('Are you sure you want to delete this tender? This action cannot be undone.');
+        if (!confirmed) return;
+        setDeleting(true);
+        try {
+            await BackendApiService.deleteTender(id);
+            const redirectPath = user?.role === 'owner' ? '/owner/tenders' : '/admin/tenders';
+            navigate(redirectPath, { replace: true });
+        } catch (error) {
+            console.error('Failed to delete tender:', error);
+            const msg = error?.response?.data?.message || error?.message || 'Please try again.';
+            alert('Failed to delete tender. ' + msg);
+            setDeleting(false);
+        }
+    };
+
+    const handleUnlockTender = async () => {
+        try {
+            setUnlocking(true);
+            const result = await BackendApiService.unlockTender(id);
+            setIsUnlocked(true);
+            setTender(prev => prev ? { ...prev, isUnlocked: true } : prev);
+            window.dispatchEvent(new CustomEvent('appalto:credits-updated'));
+            alert(result?.message || t('contractor.tenders.unlockSuccess'));
+        } catch (err) {
+            console.error("Failed to unlock tender", err);
+            if (err.response?.status === 402) {
+                const required = err.response?.data?.required_credits;
+                const balance = err.response?.data?.current_balance;
+                alert(required !== undefined
+                    ? `Insufficient credits. This tender requires ${required} credits and your balance is ${balance ?? 0}.`
+                    : t('contractor.tenders.insufficientCredits'));
+            } else {
+                alert(t('contractor.tenders.unlockError'));
+            }
+        } finally {
+            setUnlocking(false);
+        }
+    };
+
     if (loading) return <div className="p-6 sm:p-12 text-center text-gray-500 text-sm sm:text-base">Loading tender data...</div>;
     if (!tender) return <div className="p-6 sm:p-12 text-center text-red-500 text-sm sm:text-base">Tender not found.</div>;
 
@@ -592,10 +634,30 @@ const TenderDetails = () => {
                                         </div>
                                     </div>
 
-                                    {isAdmin && tender.status === 'draft' && (
-                                        <Button onClick={handlePublish} disabled={publishing} className="bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-200 w-full sm:w-auto flex-shrink-0">
-                                            {publishing ? 'Publishing...' : 'Publish Tender'}
-                                        </Button>
+                                    {isAdmin && (
+                                        <div className="flex flex-wrap gap-2 flex-shrink-0">
+                                            {tender.status === 'draft' && (
+                                                <Button onClick={handlePublish} disabled={publishing} className="bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-200">
+                                                    {publishing ? 'Publishing...' : 'Publish Tender'}
+                                                </Button>
+                                            )}
+                                            <Button
+                                                variant="outline"
+                                                onClick={() => navigate(`/${user?.role === 'owner' ? 'owner' : 'admin'}/edit-tender/${id}`)}
+                                                className="border-gray-300 hover:bg-gray-50"
+                                            >
+                                                <Pencil className="h-4 w-4 mr-1.5" /> Edit
+                                            </Button>
+                                            <Button
+                                                variant="outline"
+                                                onClick={handleDelete}
+                                                disabled={deleting}
+                                                className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
+                                            >
+                                                <Trash2 className="h-4 w-4 mr-1.5" />
+                                                {deleting ? 'Deleting...' : 'Delete'}
+                                            </Button>
+                                        </div>
                                     )}
                                 </div>
                             </div>
@@ -1204,6 +1266,16 @@ const TenderDetails = () => {
                                         !isUnlocked ? t('contractor.tenders.unlockToView') :
                                             t('contractor.tenders.closedOrAwarded')}
                                 </p>
+                                {user?.role === 'contractor' && !isUnlocked && (
+                                    <Button
+                                        onClick={handleUnlockTender}
+                                        disabled={unlocking}
+                                        className="mt-4 bg-amber-500 hover:bg-amber-600 text-white"
+                                    >
+                                        <Lock className="h-4 w-4 mr-2" />
+                                        {unlocking ? 'Unlocking...' : `Unlock for ${tender.unlockCredits ?? tender.unlock_credits ?? 0} credits`}
+                                    </Button>
+                                )}
                             </CardContent>
                         </Card>
                     </div>

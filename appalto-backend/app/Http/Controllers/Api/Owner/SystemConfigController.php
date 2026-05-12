@@ -11,7 +11,17 @@ class SystemConfigController extends Controller
 {
     public function index()
     {
-        $configs = SystemConfig::all()->pluck('value', 'key');
+        $configs = SystemConfig::all()->mapWithKeys(function (SystemConfig $config) {
+            $value = $config->value;
+
+            if ($config->key === 'budgetRangeCreditRules') {
+                $decoded = json_decode($value, true);
+                $value = json_last_error() === JSON_ERROR_NONE ? $decoded : [];
+            }
+
+            return [$config->key => $value];
+        });
+
         return response()->json($configs);
     }
 
@@ -22,7 +32,7 @@ class SystemConfigController extends Controller
         foreach ($data as $key => $value) {
             SystemConfig::updateOrCreate(
                 ['key' => $key],
-                ['value' => $value]
+                ['value' => is_array($value) ? json_encode($value) : $value]
             );
         }
 

@@ -61,8 +61,10 @@ const Sidebar = ({ isOpen, toggle }) => {
                 "fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-xl flex flex-col transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:inset-auto",
                 isOpen ? "translate-x-0" : "-translate-x-full"
             )}>
-                <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-                    <img src="/logo.jpg" alt="Appalto Smart" className="w-auto h-8 object-contain" />
+                <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                    <div className="h-[58px] w-[188px] shrink-0 overflow-hidden">
+                        <img src="/logo-wide.png" alt="Appalto Smart" className="h-full w-full object-contain object-left" />
+                    </div>
                     <button
                         onClick={toggle}
                         className="p-1 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 md:hidden"

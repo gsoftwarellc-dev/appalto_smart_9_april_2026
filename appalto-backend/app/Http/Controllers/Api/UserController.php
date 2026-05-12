@@ -15,29 +15,36 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
+        $validated = $request->validate([
+            'role' => 'sometimes|in:admin,contractor,owner',
+            'verified' => 'sometimes|in:true,false,1,0',
+            'status' => 'sometimes|in:active,suspended,pending',
+            'search' => 'sometimes|string|max:255',
+            'per_page' => 'sometimes|integer|min:1|max:100',
+        ]);
+
         $query = User::query()->with('credits');
 
         // Filter by role
-        if ($request->has('role')) {
-            $query->where('role', $request->role);
+        if (isset($validated['role'])) {
+            $query->where('role', $validated['role']);
         }
 
-        if ($request->has('verified')) {
-            $verified = filter_var($request->verified, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+        if (array_key_exists('verified', $validated)) {
+            $verified = filter_var($validated['verified'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
             if ($verified !== null) {
                 $query->where('verified', $verified);
             }
         }
 
-        // Filter by status (we'll use a custom attribute or check specific fields)
-        if ($request->has('status')) {
-            // For now, we can add a status column later if needed
-            // This is a placeholder for future status filtering
+        // Filter by account status
+        if (isset($validated['status'])) {
+            $query->where('status', $validated['status']);
         }
 
         // Search by name or email
-        if ($request->has('search')) {
-            $search = $request->search;
+        if (!empty($validated['search'])) {
+            $search = trim($validated['search']);
             $query->where(function($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('email', 'like', "%{$search}%")
@@ -49,7 +56,7 @@ class UserController extends Controller
         $query->orderBy('created_at', 'desc');
 
         // Paginate results
-        $perPage = $request->get('per_page', 50);
+        $perPage = $validated['per_page'] ?? 50;
         $users = $query->paginate($perPage);
 
         return response()->json($users);

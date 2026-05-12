@@ -5,9 +5,32 @@ import { Card, CardContent } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Input } from '../../components/ui/Input';
-import { Search, Loader2, Eye, Edit, FileText, MapPin, Calendar, Euro } from 'lucide-react';
+import { Search, Loader2, Eye, Edit, FileText, MapPin, Calendar, Euro, Clock } from 'lucide-react';
 import BackendApiService from '../../services/backendApi';
 import { useAuth } from '../../context/AuthContext';
+
+const timeAgo = (dateString) => {
+    if (!dateString) return '';
+    const now = new Date();
+    const date = new Date(dateString);
+    const diffMs = now - date;
+    const diffSec = Math.floor(diffMs / 1000);
+    const diffMin = Math.floor(diffSec / 60);
+    const diffHour = Math.floor(diffMin / 60);
+    const diffDay = Math.floor(diffHour / 24);
+    const diffWeek = Math.floor(diffDay / 7);
+    const diffMonth = Math.floor(diffDay / 30);
+    const diffYear = Math.floor(diffDay / 365);
+
+    if (diffSec < 5) return 'just now posted';
+    if (diffSec < 60) return `${diffSec} sec ago posted`;
+    if (diffMin < 60) return `${diffMin} min${diffMin > 1 ? 's' : ''} ago posted`;
+    if (diffHour < 24) return `${diffHour} hour${diffHour > 1 ? 's' : ''} ago posted`;
+    if (diffDay < 7) return `${diffDay} day${diffDay > 1 ? 's' : ''} ago posted`;
+    if (diffWeek < 5) return `${diffWeek} week${diffWeek > 1 ? 's' : ''} ago posted`;
+    if (diffMonth < 12) return `${diffMonth} month${diffMonth > 1 ? 's' : ''} ago posted`;
+    return `${diffYear} year${diffYear > 1 ? 's' : ''} ago posted`;
+};
 
 const TendersList = () => {
     const { t } = useTranslation();
@@ -75,13 +98,19 @@ const TendersList = () => {
         return value;
     };
 
-    const filteredTenders = tenders.filter(tender => {
-        const matchesSearch =
-            tender.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            tender.location?.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesStatus = statusFilter === 'All' || tender.status === statusFilter;
-        return matchesSearch && matchesStatus;
-    });
+    const filteredTenders = tenders
+        .filter(tender => {
+            const matchesSearch =
+                tender.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                tender.location?.toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesStatus = statusFilter === 'All' || tender.status === statusFilter;
+            return matchesSearch && matchesStatus;
+        })
+        .sort((a, b) => {
+            const dateA = a.created_at ? new Date(a.created_at) : new Date(0);
+            const dateB = b.created_at ? new Date(b.created_at) : new Date(0);
+            return dateB - dateA;
+        });
 
     if (loading) return <div className="p-8 text-center flex justify-center"><Loader2 className="h-8 w-8 animate-spin text-blue-600" /></div>;
 
@@ -199,6 +228,12 @@ const TendersList = () => {
                                             <FileText className="h-4 w-4 text-purple-500" />
                                             <span className="font-medium text-gray-700">{tender.bids_count || 0} {t('admin.tendersList.bids')}</span>
                                         </div>
+                                        {tender.created_at && (
+                                            <div className="flex items-center gap-2 text-gray-500 bg-amber-50 px-3 py-1.5 rounded-md border border-amber-100">
+                                                <Clock className="h-4 w-4 text-amber-500" />
+                                                <span className="font-medium text-amber-700 text-xs">{timeAgo(tender.created_at)}</span>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 

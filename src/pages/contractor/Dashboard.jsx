@@ -22,7 +22,7 @@ const Dashboard = () => {
     });
 
     useEffect(() => {
-        const hour = new Date().getHours();
+        const hour = parseInt(new Intl.DateTimeFormat('it-IT', { hour: 'numeric', hour12: false, timeZone: 'Europe/Rome' }).format(new Date()), 10);
         if (hour < 12) setGreeting(t('contractor.dashboard.goodMorning'));
         else if (hour < 18) setGreeting(t('contractor.dashboard.goodAfternoon'));
         else setGreeting(t('contractor.dashboard.goodEvening'));
@@ -143,7 +143,7 @@ const Dashboard = () => {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
                 <div>
                     <h2 className="text-2xl font-bold tracking-tight text-gray-900">
-                        {greeting}, <span className="text-blue-600">{BackendApiService.getCurrentUserSync()?.name}</span>
+                        {greeting}, <span className="text-blue-600">{BackendApiService.getCurrentUserSync()?.company_name || BackendApiService.getCurrentUserSync()?.name}</span>
                     </h2>
                     <p className="text-gray-500 text-sm mt-1">{t('contractor.dashboard.welcome')}</p>
                 </div>

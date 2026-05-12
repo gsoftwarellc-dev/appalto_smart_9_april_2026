@@ -8,6 +8,7 @@ use App\Models\Tender;
 use App\Models\Bid;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
@@ -171,5 +172,145 @@ class UserController extends Controller
         $user->update(['status' => 'active']);
         
         return response()->json(['message' => 'User activated successfully']);
+    }
+
+    /**
+     * Permanently delete a user and user-owned platform data.
+     */
+    public function destroy(Request $request, $id)
+    {
+        $user = User::with(['createdTenders', 'bids', 'documents'])->findOrFail($id);
+
+        if ($user->id === $request->user()->id) {
+            return response()->json([
+                'message' => 'You cannot delete your own account from this screen.',
+            ], 422);
+        }
+
+        if ($user->role === 'owner') {
+            return response()->json([
+                'message' => 'Owner accounts cannot be deleted from this screen.',
+            ], 403);
+        }
+
+        $summary = DB::transaction(function () use ($request, $user) {
+            $summary = [
+                'tenders' => 0,
+                'bids' => 0,
+                'documents' => 0,
+            ];
+
+            $user->createdTenders()->with(['bids.bidItems', 'documents'])->chunkById(25, function ($tenders) use (&$summary) {
+                foreach ($tenders as $tender) {
+                    $summary['tenders']++;
+                    $summary['documents'] += $tender->documents->count();
+                    $summary['bids'] += $tender->bids->count();
+                    $this->deleteTenderGraph($tender);
+                }
+            });
+
+            $user->bids()->with('bidItems')->chunkById(50, function ($bids) use (&$summary) {
+                foreach ($bids as $bid) {
+                    $summary['bids']++;
+                    $this->deleteBidGraph($bid);
+                }
+            });
+
+            $user->documents()->chunkById(50, function ($documents) use (&$summary) {
+                foreach ($documents as $document) {
+                    $summary['documents']++;
+                    $document->delete();
+                }
+            });
+
+            $this->deleteUserAvatar($user);
+
+            $user->tokens()->delete();
+            $user->savedTenders()->detach();
+            $user->unlockedTenders()->detach();
+            $user->credits()->delete();
+            $user->transactions()->delete();
+
+            DB::table('password_reset_tokens')->where('email', $user->email)->delete();
+            DB::table('notifications')
+                ->where('notifiable_type', User::class)
+                ->where('notifiable_id', $user->id)
+                ->delete();
+            DB::table('audit_logs')->where('user_id', $user->id)->delete();
+
+            $user->delete();
+
+            DB::table('audit_logs')->insert([
+                'user_id' => $request->user()->id,
+                'action' => 'User Deleted',
+                'details' => 'A non-owner platform user account was permanently deleted.',
+                'ip_address' => $request->ip(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            return $summary;
+        });
+
+        return response()->json([
+            'message' => 'User and related platform data deleted successfully.',
+            'deleted' => $summary,
+        ]);
+    }
+
+    private function deleteTenderGraph(Tender $tender): void
+    {
+        $tender->awarded_bid_id = null;
+        $tender->save();
+
+        $tender->favoritedBy()->detach();
+        $tender->unlocks()->detach();
+
+        DB::table('pdf_extractions')->where('tender_id', $tender->id)->delete();
+
+        foreach ($tender->bids as $bid) {
+            $this->deleteBidGraph($bid);
+        }
+
+        foreach ($tender->documents as $document) {
+            $document->delete();
+        }
+
+        $tender->boqItems()->delete();
+        $tender->delete();
+    }
+
+    private function deleteBidGraph(Bid $bid): void
+    {
+        Tender::where('awarded_bid_id', $bid->id)->update([
+            'status' => 'closed',
+            'awarded_bid_id' => null,
+            'awarded_date' => null,
+        ]);
+
+        if ($bid->offer_file_path && Storage::disk('public')->exists($bid->offer_file_path)) {
+            Storage::disk('public')->delete($bid->offer_file_path);
+        }
+
+        $bid->bidItems()->delete();
+        $bid->delete();
+    }
+
+    private function deleteUserAvatar(User $user): void
+    {
+        if (!$user->avatar_url) {
+            return;
+        }
+
+        $path = parse_url($user->avatar_url, PHP_URL_PATH) ?: $user->avatar_url;
+        $path = ltrim($path, '/');
+
+        if (str_starts_with($path, 'storage/')) {
+            $path = substr($path, strlen('storage/'));
+        }
+
+        if ($path && Storage::disk('public')->exists($path)) {
+            Storage::disk('public')->delete($path);
+        }
     }
 }

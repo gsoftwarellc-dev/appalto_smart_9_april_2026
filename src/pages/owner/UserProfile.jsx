@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
@@ -6,7 +6,7 @@ import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import {
     ArrowLeft, User, Mail, Building, Phone, Calendar, Ban, CheckCircle,
-    FileText, DollarSign, TrendingUp, Loader2, MapPin, FileCheck, ExternalLink
+    FileText, DollarSign, TrendingUp, Loader2, MapPin, FileCheck, ExternalLink, Trash2
 } from 'lucide-react';
 import { formatEuro } from '../../utils/currency';
 import {
@@ -28,11 +28,7 @@ const UserProfile = () => {
     const [error, setError] = useState(null);
     const [actionLoading, setActionLoading] = useState(false);
 
-    useEffect(() => {
-        fetchProfile();
-    }, [id]);
-
-    const fetchProfile = async () => {
+    const fetchProfile = useCallback(async () => {
         try {
             setLoading(true);
             const data = await api.getUserProfile(id);
@@ -44,7 +40,11 @@ const UserProfile = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [id, t]);
+
+    useEffect(() => {
+        fetchProfile();
+    }, [fetchProfile]);
 
     const handleSuspend = async () => {
         if (!confirm(t('admin.userProfile.confirmSuspend'))) return;
@@ -82,6 +82,21 @@ const UserProfile = () => {
             alert(t('owner.users.successVerify'));
         } catch (err) {
             alert(err.response?.data?.message || t('owner.users.errorAction'));
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const handleDelete = async () => {
+        if (!window.confirm(t('admin.userProfile.confirmDelete', { name: user.name }))) return;
+
+        try {
+            setActionLoading(true);
+            await api.deleteUser(id);
+            alert(t('admin.userProfile.deleteSuccess'));
+            navigate('/owner/users');
+        } catch (err) {
+            alert(err.response?.data?.message || t('admin.userProfile.deleteError'));
         } finally {
             setActionLoading(false);
         }
@@ -158,6 +173,12 @@ const UserProfile = () => {
                         <Button onClick={handleSuspend} disabled={actionLoading} variant="destructive">
                             <Ban className="h-4 w-4 mr-2" />
                             {t('admin.userProfile.suspend')}
+                        </Button>
+                    )}
+                    {user.role !== 'owner' && (
+                        <Button onClick={handleDelete} disabled={actionLoading} variant="destructive">
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            {t('admin.userProfile.delete')}
                         </Button>
                     )}
                 </div>

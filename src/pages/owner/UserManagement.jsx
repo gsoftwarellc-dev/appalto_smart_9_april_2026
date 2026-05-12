@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
@@ -19,34 +19,32 @@ import api from '../../services/backendApi';
 const UserManagement = () => {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const [activeTab, setActiveTab] = useState('all'); // 'all', 'clients', 'contractors', 'unverified', 'owners'
+    const [activeTab, setActiveTab] = useState('all'); // 'all', 'clients', 'contractors', 'unverified', 'suspended', 'owners'
     const [searchTerm, setSearchTerm] = useState('');
     const [users, setUsers] = useState([]);
     const [statistics, setStatistics] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // Fetch users from API
-    useEffect(() => {
-        fetchUsers();
-        fetchStatistics();
-    }, [activeTab, searchTerm]);
-
-    const fetchUsers = async () => {
+    const fetchUsers = useCallback(async () => {
         try {
             setLoading(true);
             let role;
+            let status;
             if (activeTab === 'contractors' || activeTab === 'unverified') {
                 role = 'contractor';
             } else if (activeTab === 'clients') {
                 role = 'admin';
             } else if (activeTab === 'owners') {
                 role = 'owner';
+            } else if (activeTab === 'suspended') {
+                status = 'suspended';
             }
             // If activeTab is 'all', don't send role parameter to get all users
             const params = {
                 ...(role && { role }),
                 ...(activeTab === 'unverified' && { verified: 'false' }),
+                ...(status && { status }),
                 ...(searchTerm && { search: searchTerm })
             };
             const response = await api.getUsers(params);
@@ -58,16 +56,22 @@ const UserManagement = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [activeTab, searchTerm]);
 
-    const fetchStatistics = async () => {
+    const fetchStatistics = useCallback(async () => {
         try {
             const response = await api.getUserStatistics();
             setStatistics(response);
         } catch (err) {
             console.error('Error fetching statistics:', err);
         }
-    };
+    }, []);
+
+    // Fetch users from API
+    useEffect(() => {
+        fetchUsers();
+        fetchStatistics();
+    }, [fetchUsers, fetchStatistics]);
 
     const isUserVerified = (user) => {
         return user.verified === true || user.verified === 1 || user.verified === '1';
@@ -139,7 +143,7 @@ const UserManagement = () => {
             <Card>
                 <CardHeader>
                     <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-                        <div className="flex items-center space-x-2 bg-gray-100 p-1 rounded-lg">
+                        <div className="flex flex-wrap items-center gap-2 bg-gray-100 p-1 rounded-lg">
                             <button
                                 onClick={() => setActiveTab('all')}
                                 className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${activeTab === 'all' ? 'bg-white shadow text-blue-600' : 'text-gray-500 hover:text-gray-900'
@@ -167,6 +171,13 @@ const UserManagement = () => {
                                     }`}
                             >
                                 {t('owner.users.tabs.unverified')}
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('suspended')}
+                                className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${activeTab === 'suspended' ? 'bg-white shadow text-blue-600' : 'text-gray-500 hover:text-gray-900'
+                                    }`}
+                            >
+                                {t('owner.users.tabs.suspended')}
                             </button>
                             <button
                                 onClick={() => setActiveTab('owners')}

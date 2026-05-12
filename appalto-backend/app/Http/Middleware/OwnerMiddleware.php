@@ -15,7 +15,7 @@ class OwnerMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!$request->user() || $request->user()->role !== 'owner') {
+        if (!$request->user() || !$request->user()->isActive() || $request->user()->role !== 'owner') {
             return response()->json([
                 'message' => 'Unauthorized. Owner access required.'
             ], 403);

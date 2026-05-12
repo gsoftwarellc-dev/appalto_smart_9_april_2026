@@ -23,16 +23,19 @@ class DashboardController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        // Get statistics
+        // Get statistics scoped to this admin's tenders
+        $myTenderIds = Tender::where('created_by', $user->id)->pluck('id');
+
         $stats = [
-            'total_tenders' => Tender::count(),
-            'active_tenders' => Tender::where('status', 'published')->count(),
-            'total_bids' => Bid::count(),
+            'total_tenders' => Tender::where('created_by', $user->id)->count(),
+            'active_tenders' => Tender::where('created_by', $user->id)->where('status', 'published')->count(),
+            'total_bids' => Bid::whereIn('tender_id', $myTenderIds)->count(),
             'total_contractors' => User::where('role', 'contractor')->count(),
         ];
 
-        // Recent tenders (last 5)
+        // Recent tenders (last 5) — only this admin's
         $recentTenders = Tender::with('creator:id,name')
+            ->where('created_by', $user->id)
             ->select('id', 'title', 'status', 'deadline', 'created_by', 'created_at')
             ->withCount('bids')
             ->orderBy('created_at', 'desc')
@@ -49,8 +52,9 @@ class DashboardController extends Controller
                 ];
             });
 
-        // Tender status distribution for pie chart
-        $statusDistribution = Tender::select('status', DB::raw('count(*) as count'))
+        // Tender status distribution for pie chart — only this admin's
+        $statusDistribution = Tender::where('created_by', $user->id)
+            ->select('status', DB::raw('count(*) as count'))
             ->groupBy('status')
             ->get()
             ->mapWithKeys(function ($item) {
@@ -61,14 +65,15 @@ class DashboardController extends Controller
             ['name' => 'Open', 'value' => $statusDistribution['published'] ?? 0, 'color' => '#10b981'],
             ['name' => 'Draft', 'value' => $statusDistribution['draft'] ?? 0, 'color' => '#6b7280'],
             ['name' => 'Closed', 'value' => $statusDistribution['closed'] ?? 0, 'color' => '#ef4444'],
-            ['name' => 'Awarded', 'value' => Bid::where('status', 'awarded')->distinct('tender_id')->count(), 'color' => '#3b82f6'],
+            ['name' => 'Awarded', 'value' => Bid::whereIn('tender_id', $myTenderIds)->where('status', 'awarded')->distinct('tender_id')->count(), 'color' => '#3b82f6'],
         ];
 
-        // Recent activity (last 10 items)
+        // Recent activity (last 10 items) — only this admin's tenders
         $recentActivity = [];
         
-        // Get recent bids
+        // Get recent bids on this admin's tenders
         $recentBids = Bid::with(['contractor:id,name', 'tender:id,title'])
+            ->whereIn('tender_id', $myTenderIds)
             ->orderBy('created_at', 'desc')
             ->limit(5)
             ->get();
@@ -83,8 +88,9 @@ class DashboardController extends Controller
             ];
         }
 
-        // Get recent tender publications
-        $recentPublished = Tender::where('status', 'published')
+        // Get recent tender publications by this admin
+        $recentPublished = Tender::where('created_by', $user->id)
+            ->where('status', 'published')
             ->orderBy('updated_at', 'desc')
             ->limit(5)
             ->get();
@@ -99,8 +105,9 @@ class DashboardController extends Controller
             ];
         }
 
-        // Get recent awards
+        // Get recent awards on this admin's tenders
         $recentAwards = Bid::where('status', 'awarded')
+            ->whereIn('tender_id', $myTenderIds)
             ->with(['contractor:id,name', 'tender:id,title'])
             ->orderBy('updated_at', 'desc')
             ->limit(3)

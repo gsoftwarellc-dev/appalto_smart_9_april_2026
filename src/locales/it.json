@@ -4,6 +4,7 @@
         "logout": "Esci",
         "language": "Lingua",
         "dashboard": "Dashboard Committente",
+        "home": "Home",
         "na": "N/D"
     },
     "sidebar": {
@@ -36,8 +37,23 @@
         "noAccount": "Non hai un account?",
         "haveAccount": "Hai già un account?",
         "forgotPassword": "Password dimenticata?",
+        "forgotPasswordSubtitle": "Inserisci la tua email e ti invieremo un link di reset.",
+        "sendResetLink": "Invia link di reset",
+        "sendingResetLink": "Invio...",
+        "passwordResetLinkSent": "Se esiste un account con questa email, è stato inviato un link per reimpostare la password.",
+        "localResetLink": "Apri link di reset locale",
+        "localResetLinkNote": "In sviluppo locale viene usato il mailer log, quindi non viene inviata una vera email. Configura SMTP per inviare questo link alla casella dell'utente.",
+        "resetPassword": "Reimposta password",
+        "resetPasswordSubtitle": "Scegli una nuova password per il tuo account.",
+        "resetPasswordButton": "Reimposta password",
+        "resettingPassword": "Reimpostazione...",
+        "passwordResetSuccess": "Password reimpostata con successo. Accedi con la nuova password.",
+        "backToLogin": "Torna al login",
         "loginButton": "Accedi alla Dashboard",
         "loggingIn": "Accesso in corso...",
+        "showPassword": "Mostra password",
+        "hidePassword": "Nascondi password",
+        "passwordRequirement": "Usa almeno 8 caratteri con maiuscole, minuscole e un numero.",
         "registerButton": "Crea Account",
         "registering": "Creazione...",
         "welcomeBack": "Bentornato",
@@ -72,10 +88,23 @@
         "orderNumber": "Numero",
         "mandatoryForRegistrationNote": "Sono dati obbligatori ai fini della registrazione in quanto solo gli amministratori di condominio e tecnici delegati possono registrarsi.",
         "addSameMandatoryProfileData": "Aggiungere stessi dati obbligatori del profilo. Altrimenti completarli successivamente per rendere operativo il profilo.",
+        "registrationSuccess": "Registrazione completata. Effettua l'accesso.",
+        "preparingDashboard": "Il tuo account è stato creato. Stiamo preparando la tua dashboard.",
+        "redirectingToLogin": "Il tuo account è stato creato. Reindirizzamento alla pagina di accesso.",
+        "registeringSecurely": "Finalizzazione della sessione sicura...",
         "errors": {
             "passwordMatch": "Le password non corrispondono",
             "passwordLength": "La password deve essere di almeno 8 caratteri",
+            "passwordComplexity": "La password deve avere almeno 8 caratteri e includere maiuscole, minuscole e un numero.",
             "requiredFields": "Compila tutti i campi obbligatori",
+            "correctHighlightedFields": "Correggi i campi evidenziati.",
+            "invalidEmail": "Inserisci un indirizzo email valido",
+            "invalidRole": "Seleziona un tipo di dashboard valido",
+            "tooManyAttempts": "Troppi tentativi. Attendi un minuto e riprova.",
+            "maxLength": "Usa al massimo {{count}} caratteri.",
+            "invalidResetLink": "Questo link di reset non è valido o mancano informazioni richieste.",
+            "passwordResetRequestFailed": "Impossibile inviare il link di reset. Riprova.",
+            "passwordResetFailed": "Impossibile reimpostare la password. Riprova.",
             "vat11Required": "La P.iva deve essere di 11 cifre.",
             "loginFailed": "Accesso fallito",
             "registrationFailed": "Registrazione fallita"
@@ -92,8 +121,8 @@
             "object": "Oggetto",
             "address": "Indirizzo",
             "addressPlaceholder": "Via, piazza...",
-            "city": "Città",
-            "cityPlaceholder": "Città...",
+            "region": "Regione",
+            "regionPlaceholder": "Seleziona una regione italiana...",
             "deadline": "Scadenza Offerte",
             "estimatedAmount": "Importo Stimato",
             "uploadBoq": "Carica BOQ / Computo Metrico",
@@ -207,6 +236,7 @@
             "subtitle": "Informazioni dettagliate e cronologia attività",
             "activate": "Attiva Utente",
             "suspend": "Sospendi Utente",
+            "delete": "Elimina Utente",
             "userInfo": "Informazioni Utente",
             "name": "Nome",
             "email": "Email",
@@ -244,6 +274,10 @@
             "suspendError": "Impossibile sospendere l'utente",
             "activateSuccess": "Utente attivato con successo",
             "activateError": "Impossibile attivare l'utente",
+            "confirmDelete": "Questa azione eliminerà definitivamente {{name}} e tutti i dati dell'utente dalla piattaforma. L'azione non può essere annullata.",
+            "deleteConfirmationMismatch": "Eliminazione annullata. Digita DELETE esattamente per confermare.",
+            "deleteSuccess": "Utente e dati collegati eliminati con successo",
+            "deleteError": "Impossibile eliminare l'utente",
             "loadError": "Impossibile caricare il profilo"
         },
         "profile": {
@@ -481,6 +515,7 @@
             "title": "Fatturazione e Pagamenti",
             "subtitle": "Gestisci i tuoi metodi di pagamento, visualizza la cronologia delle transazioni e acquista crediti.",
             "balanceTitle": "Saldo Disponibile",
+            "availableCredit": "Credito Disponibile",
             "buy50": "Acquista 50 Crediti (€50)",
             "buy150": "Acquista 150 Crediti (€120)",
             "paymentMethods": "Metodi di Pagamento",
@@ -493,7 +528,9 @@
             "noTxnDesc": "I tuoi acquisti di crediti e sblocchi gare appariranno qui.",
             "credits": "Crediti",
             "purchaseSuccess": "Crediti acquistati con successo!",
-            "purchaseError": "Impossibile acquistare crediti."
+            "purchaseError": "Impossibile acquistare crediti.",
+            "buyNow": "Acquista Ora",
+            "redirecting": "Reindirizzamento..."
         },
         "activeTenders": "Appalti Attivi",
         "myBids": "Le Mie Offerte",
@@ -555,7 +592,7 @@
             "subtitle": "Esplora e partecipa alle nuove opportunità di appalto.",
             "browseTenders": "Sfoglia Gare",
             "searchPlaceholder": "Cerca gare...",
-            "allLocations": "Tutte le località",
+            "allLocations": "Tutte le regioni",
             "open": "Aperta",
             "urgent": "Urgente",
             "locked": "Bloccata",
@@ -579,7 +616,7 @@
             "moreThan": "Più di",
             "clientNameLabel": "Denominazione / Nome cliente",
             "addressLabel": "Indirizzo",
-            "cityLabel": "Città",
+            "cityLabel": "Regione",
             "description": "Descrizione",
             "estimatedBudget": "Budget Stimato",
             "boqTitle": "Computo Metrico (BOQ)",
@@ -710,7 +747,8 @@
             "tenders": "Gestione Appalti",
             "revenue": "Entrate",
             "configuration": "Configurazione",
-            "notifications": "Notifiche"
+            "notifications": "Notifiche",
+            "profile": "Profilo"
         },
         "notifications": {
             "title": "Notifiche",
@@ -736,12 +774,46 @@
             "save": "Salva Configurazione",
             "saving": "Salvataggio...",
             "saveSuccess": "Configurazione di sistema aggiornata con successo.",
-            "saveError": "Impossibile aggiornare la configurazione."
+            "saveError": "Impossibile aggiornare la configurazione.",
+            "creditPricing": "Prezzo dei Crediti",
+            "creditPricingDesc": "Imposta quanti crediti riceve un appaltatore per €1",
+            "creditsPerEuro": "Crediti per €1",
+            "credits": "crediti",
+            "contractorReceives": "Gli appaltatori riceveranno <1>{{credits}}</1> crediti per ogni €1 acquistato.",
+            "tenderUnlockCredits": "Crediti per Sbloccare gli Appalti",
+            "tenderUnlockCreditsDesc": "Definisci quanti crediti saranno richiesti a un appaltatore per fare un'offerta su un progetto.",
+            "stripeGateway": "Gateway di Pagamento Stripe",
+            "stripeGatewayDesc": "Collega il tuo account Stripe per accettare pagamenti",
+            "connected": "Connesso",
+            "notConnected": "Non connesso",
+            "publishableKey": "Chiave Pubblicabile",
+            "secretKey": "Chiave Segreta",
+            "getStripeKeys": "Ottieni le tue chiavi API dalla Dashboard di Stripe",
+            "testMode": "Modalità di Test",
+            "testModeDesc": "Usa le chiavi di test di Stripe per lo sviluppo. Nessun addebito reale.",
+            "connectStripe": "Collega Account Stripe",
+            "connectingStripe": "Connessione a Stripe...",
+            "stripeConnected": "Stripe Collegato con Successo",
+            "runningTestMode": "In Esecuzione in Modalità Test",
+            "runningLiveMode": "In Esecuzione in Modalità Live",
+            "webhookEndpoint": "Endpoint Webhook",
+            "addWebhook": "Aggiungi questo URL alla tua Dashboard Stripe → Webhooks",
+            "disconnectStripe": "Scollega Stripe",
+            "disconnectConfirm": "Sei sicuro di voler scollegare Stripe? I pagamenti smetteranno di funzionare.",
+            "pleaseEnterKeys": "Inserisci sia la Chiave Pubblicabile che la Chiave Segreta.",
+            "changesSaved": "Modifiche salvate con successo",
+            "unsavedChanges": "Hai modifiche non salvate",
+            "discard": "Scarta",
+            "budgetLess50k": "Meno di €50K",
+            "budget50k100k": "€50K – €100K",
+            "budget100k250k": "€100K – €250K",
+            "budgetMore250k": "Più di €250K"
         },
         "billing": {
             "title": "Fatturazione e Pagamenti",
             "subtitle": "Gestisci i tuoi metodi di pagamento, visualizza la cronologia delle transazioni e acquista crediti.",
             "balanceTitle": "Saldo Disponibile",
+            "availableCredit": "Credito Disponibile",
             "buy50": "Acquista 50 Crediti (€50)",
             "buy150": "Acquista 150 Crediti (€120)",
             "paymentMethods": "Metodi di Pagamento",
@@ -841,7 +913,8 @@
             },
             "tabs": {
                 "all": "Tutti",
-                "unverified": "Non verificati"
+                "unverified": "Non verificati",
+                "suspended": "Sospesi"
             }
         },
         "userProfile": {
@@ -1014,6 +1087,83 @@
             "terms": "Termini di Servizio",
             "country": "Italia",
             "methodTag": "Metodo Digitale"
+        },
+        "legal": {
+            "about": {
+                "title": "Chi Siamo",
+                "sections": [
+                    {
+                        "heading": "Chi siamo",
+                        "body": "Appalto Smart è una piattaforma digitale creata per aiutare amministratori, tecnici delegati e imprese edili a gestire procedure di gara private con maggiore chiarezza, rapidità e tracciabilità."
+                    },
+                    {
+                        "heading": "Cosa facciamo",
+                        "body": "La piattaforma supporta la pubblicazione degli appalti, l'accesso delle imprese, la gestione dei documenti, l'invio delle offerte, il confronto dei preventivi e la comunicazione tra le parti coinvolte."
+                    },
+                    {
+                        "heading": "Il nostro standard",
+                        "body": "Il nostro obiettivo è offrire un ambiente professionale, trasparente e ordinato. Gli utenti sono responsabili della verifica dei propri dati aziendali, documenti di gara, offerte e file caricati prima dell'invio."
+                    },
+                    {
+                        "heading": "Pagamenti e crediti",
+                        "body": "La partecipazione delle imprese può richiedere crediti o commissioni di piattaforma. I crediti acquistati, i costi di accesso e le commissioni di partecipazione non sono rimborsabili dopo l'acquisto o l'utilizzo, salvo quando il rimborso sia imposto dalla legge applicabile."
+                    }
+                ]
+            },
+            "privacy": {
+                "title": "Privacy Policy",
+                "sections": [
+                    {
+                        "heading": "Informazioni raccolte",
+                        "body": "Possiamo raccogliere dati account, informazioni aziendali, dati di contatto, documenti di gara, documenti di offerta, registri di utilizzo, transazioni e informazioni tecniche necessarie per gestire e proteggere la piattaforma."
+                    },
+                    {
+                        "heading": "Utilizzo delle informazioni",
+                        "body": "Le informazioni sono utilizzate per creare e gestire account, pubblicare e amministrare appalti, elaborare offerte, inviare notifiche, fornire assistenza, mantenere la sicurezza della piattaforma e migliorare la qualità del servizio."
+                    },
+                    {
+                        "heading": "Condivisione e visibilità",
+                        "body": "Le informazioni relative ad appalti e offerte possono essere visibili agli utenti autorizzati coinvolti nella relativa procedura. Non vendiamo dati personali. I dati possono essere condivisi con fornitori di servizio solo quando necessario per hosting, pagamenti, analisi, supporto, conformità o sicurezza."
+                    },
+                    {
+                        "heading": "Conservazione e sicurezza",
+                        "body": "Conserviamo le informazioni per il tempo necessario a fornire il servizio, rispettare obblighi di legge, risolvere controversie e mantenere registrazioni aziendali. Applichiamo misure tecniche e organizzative ragionevoli per proteggere i dati della piattaforma."
+                    },
+                    {
+                        "heading": "Responsabilità dell'utente",
+                        "body": "Gli utenti non devono caricare informazioni riservate, illecite o dati personali non necessari, salvo quando siano richiesti dalla procedura di gara. Gli utenti devono assicurarsi di avere il diritto di condividere tutti i documenti e dati caricati."
+                    }
+                ]
+            },
+            "terms": {
+                "title": "Termini di Servizio",
+                "sections": [
+                    {
+                        "heading": "Uso della piattaforma",
+                        "body": "Utilizzando Appalto Smart, gli utenti accettano di fornire informazioni corrette, mantenere riservate le credenziali, usare la piattaforma in modo lecito ed evitare azioni che possano disturbare, compromettere o abusare del servizio."
+                    },
+                    {
+                        "heading": "Responsabilità su appalti e offerte",
+                        "body": "Amministratori, tecnici e imprese sono responsabili del contenuto, dell'accuratezza, della completezza e della liceità di appalti, offerte, prezzi, documenti, firme e comunicazioni inviati tramite la piattaforma."
+                    },
+                    {
+                        "heading": "Nessuna garanzia di aggiudicazione o risultato",
+                        "body": "Appalto Smart fornisce strumenti digitali per gestire flussi di gara. Non garantiamo che un appalto riceva offerte, che un'impresa vinca una gara o che venga concluso un accordo commerciale."
+                    },
+                    {
+                        "heading": "Pagamenti non rimborsabili",
+                        "body": "Tutti gli acquisti di crediti, sblocchi di appalti, costi di accesso, commissioni di piattaforma e commissioni di partecipazione sono definitivi e non rimborsabili dopo l'acquisto o l'utilizzo. I rimborsi sono previsti solo quando richiesti dalla legge applicabile o quando Appalto Smart conferma un errore di fatturazione."
+                    },
+                    {
+                        "heading": "Modifiche al servizio",
+                        "body": "Possiamo aggiornare, migliorare, limitare, sospendere o interrompere parti della piattaforma quando necessario per manutenzione, sicurezza, conformità, sviluppo del prodotto o esigenze aziendali."
+                    },
+                    {
+                        "heading": "Limitazione di responsabilità",
+                        "body": "Nei limiti massimi consentiti dalla legge, Appalto Smart non è responsabile per perdite indirette, mancati profitti, opportunità commerciali perse, errori inseriti dagli utenti, azioni di terzi o decisioni prese sulla base delle informazioni di appalto o offerta."
+                    }
+                ]
+            }
         }
     },
     "charts": {

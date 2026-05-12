@@ -83,6 +83,7 @@ const SpotlightCard = ({ children, className = "" }) => {
 const LandingPage = () => {
     const { t } = useTranslation();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [activeFooterContent, setActiveFooterContent] = useState(null);
     const { scrollY } = useScroll();
     const heroY = useTransform(scrollY, [0, 500], [0, 150]);
     const heroOpacity = useTransform(scrollY, [0, 500], [1, 0.5]);
@@ -207,31 +208,46 @@ const LandingPage = () => {
         t('landing.security.points.fairAccess')
     ];
 
+    const legalContent = {
+        about: {
+            title: t('landing.legal.about.title'),
+            sections: t('landing.legal.about.sections', { returnObjects: true })
+        },
+        privacy: {
+            title: t('landing.legal.privacy.title'),
+            sections: t('landing.legal.privacy.sections', { returnObjects: true })
+        },
+        terms: {
+            title: t('landing.legal.terms.title'),
+            sections: t('landing.legal.terms.sections', { returnObjects: true })
+        }
+    };
+
     const footerColumns = [
         {
             title: t('landing.footer.platform'),
             items: [
                 { label: t('landing.footer.owners'), to: '/register' },
-                { label: t('landing.footer.contractors'), to: '/register' },
-                { label: t('landing.footer.pricing'), to: '/register' }
+                { label: t('landing.footer.contractors'), to: '/register' }
             ]
         },
         {
             title: t('landing.footer.company'),
             items: [
-                { label: t('landing.footer.about'), to: '/' },
-                { label: t('landing.footer.careers'), to: '/register' },
+                { label: t('landing.footer.about'), contentKey: 'about' },
                 { label: t('landing.footer.contact'), to: '/login' }
             ]
         },
         {
             title: t('landing.footer.legal'),
             items: [
-                { label: t('landing.footer.privacy'), to: '/' },
-                { label: t('landing.footer.terms'), to: '/' }
+                { label: t('landing.footer.privacy'), contentKey: 'privacy' },
+                { label: t('landing.footer.terms'), contentKey: 'terms' }
             ]
         }
     ];
+
+    const activeContent = activeFooterContent ? legalContent[activeFooterContent] : null;
 
     return (
         <div className="min-h-screen bg-[#0B1120] font-sans text-white overflow-x-hidden selection:bg-[#f2c661]/30 selection:text-[#fff6dc]">
@@ -822,12 +838,22 @@ const LandingPage = () => {
                                 <ul className="mt-5 space-y-3.5">
                                     {column.items.map((item) => (
                                         <li key={item.label}>
-                                            <Link
-                                                to={item.to}
-                                                className="text-[15px] text-[#6b6256] transition-colors hover:text-[#cf7c22]"
-                                            >
-                                                {item.label}
-                                            </Link>
+                                            {item.contentKey ? (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setActiveFooterContent(item.contentKey)}
+                                                    className="text-left text-[15px] text-[#6b6256] transition-colors hover:text-[#cf7c22]"
+                                                >
+                                                    {item.label}
+                                                </button>
+                                            ) : (
+                                                <Link
+                                                    to={item.to}
+                                                    className="text-[15px] text-[#6b6256] transition-colors hover:text-[#cf7c22]"
+                                                >
+                                                    {item.label}
+                                                </Link>
+                                            )}
                                         </li>
                                     ))}
                                 </ul>
@@ -836,6 +862,50 @@ const LandingPage = () => {
                     </div>
                 </div>
             </footer>
+
+            <AnimatePresence>
+                {activeContent && (
+                    <motion.div
+                        className="fixed inset-0 z-[70] flex items-center justify-center bg-[#020617]/78 px-4 py-6 backdrop-blur-sm"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setActiveFooterContent(null)}
+                    >
+                        <motion.div
+                            role="dialog"
+                            aria-modal="true"
+                            aria-labelledby="footer-content-title"
+                            className="relative max-h-[88vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-[#dcc9a8] bg-[#fffaf0] p-6 text-[#40382f] shadow-[0_30px_90px_rgba(0,0,0,0.35)] md:p-8"
+                            initial={{ y: 24, scale: 0.98 }}
+                            animate={{ y: 0, scale: 1 }}
+                            exit={{ y: 24, scale: 0.98 }}
+                            onClick={(event) => event.stopPropagation()}
+                        >
+                            <button
+                                type="button"
+                                onClick={() => setActiveFooterContent(null)}
+                                className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#d8c39a] bg-white/70 text-[#5b5146] transition-colors hover:bg-white hover:text-[#1f2937]"
+                                aria-label="Close"
+                            >
+                                <X className="h-4 w-4" />
+                            </button>
+
+                            <h2 id="footer-content-title" className="pr-10 text-2xl font-bold text-[#1f2937] md:text-3xl">
+                                {activeContent.title}
+                            </h2>
+                            <div className="mt-6 space-y-6">
+                                {Array.isArray(activeContent.sections) && activeContent.sections.map((section) => (
+                                    <section key={section.heading} className="space-y-2">
+                                        <h3 className="text-base font-semibold text-[#1f2937]">{section.heading}</h3>
+                                        <p className="text-sm leading-7 text-[#5f564a] md:text-[15px]">{section.body}</p>
+                                    </section>
+                                ))}
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };

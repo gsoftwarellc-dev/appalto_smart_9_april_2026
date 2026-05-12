@@ -7,6 +7,7 @@ import { Button } from '../../components/ui/Button';
 import { Search, MapPin, Calendar, Clock, Filter, X, Lock, Loader2 } from 'lucide-react';
 import { Input } from '../../components/ui/Input';
 import BackendApiService from '../../services/backendApi';
+import { ITALIAN_REGIONS } from '../../constants/italianRegions';
 // import { useDebounce } from '../../hooks/useDebounce'; // Removed
 
 // Simple debounce impl since I don't know if hook exists
@@ -21,26 +22,28 @@ const useDebounceValue = (value, delay) => {
     return debouncedValue;
 };
 
-const ITALIAN_PROVINCES = [
-    'Agrigento', 'Alessandria', 'Ancona', 'Aosta', 'Arezzo', 'Ascoli Piceno', 'Asti', 'Avellino',
-    'Bari', 'Barletta-Andria-Trani', 'Belluno', 'Benevento', 'Bergamo', 'Biella', 'Bologna',
-    'Bolzano', 'Brescia', 'Brindisi', 'Cagliari', 'Caltanissetta', 'Campobasso', 'Caserta',
-    'Catania', 'Catanzaro', 'Chieti', 'Como', 'Cosenza', 'Cremona', 'Crotone', 'Cuneo',
-    'Enna', 'Fermo', 'Ferrara', 'Firenze', 'Foggia', 'Forlì-Cesena', 'Frosinone',
-    'Genova', 'Gorizia', 'Grosseto',
-    'Imperia', 'Isernia',
-    'La Spezia', 'L Aquila', 'Latina', 'Lecce', 'Lecco', 'Livorno', 'Lodi', 'Lucca',
-    'Macerata', 'Mantova', 'Massa-Carrara', 'Matera', 'Messina', 'Milano', 'Modena', 'Monza e Brianza',
-    'Napoli', 'Novara',
-    'Nuoro', 'Oristano',
-    'Padova', 'Palermo', 'Parma', 'Pavia', 'Perugia', 'Pesaro e Urbino', 'Pescara', 'Piacenza',
-    'Pisa', 'Pistoia', 'Pordenone', 'Potenza', 'Prato',
-    'Ragusa', 'Ravenna', 'Reggio Calabria', 'Reggio Emilia', 'Rieti', 'Rimini', 'Roma', 'Rovigo',
-    'Salerno', 'Sassari', 'Savona', 'Siena', 'Siracusa', 'Sondrio', 'Sud Sardegna',
-    'Taranto', 'Teramo', 'Terni', 'Torino', 'Trapani', 'Trento', 'Treviso', 'Trieste',
-    'Udine',
-    'Varese', 'Venezia', 'Verbano-Cusio-Ossola', 'Vercelli', 'Verona', 'Vibo Valentia', 'Vicenza', 'Viterbo',
-];
+const timeAgo = (dateString) => {
+    if (!dateString) return '';
+    const now = new Date();
+    const date = new Date(dateString);
+    const diffMs = now - date;
+    const diffSec = Math.floor(diffMs / 1000);
+    const diffMin = Math.floor(diffSec / 60);
+    const diffHour = Math.floor(diffMin / 60);
+    const diffDay = Math.floor(diffHour / 24);
+    const diffWeek = Math.floor(diffDay / 7);
+    const diffMonth = Math.floor(diffDay / 30);
+    const diffYear = Math.floor(diffDay / 365);
+
+    if (diffSec < 5) return 'just now posted';
+    if (diffSec < 60) return `${diffSec} sec ago posted`;
+    if (diffMin < 60) return `${diffMin} min${diffMin > 1 ? 's' : ''} ago posted`;
+    if (diffHour < 24) return `${diffHour} hour${diffHour > 1 ? 's' : ''} ago posted`;
+    if (diffDay < 7) return `${diffDay} day${diffDay > 1 ? 's' : ''} ago posted`;
+    if (diffWeek < 5) return `${diffWeek} week${diffWeek > 1 ? 's' : ''} ago posted`;
+    if (diffMonth < 12) return `${diffMonth} month${diffMonth > 1 ? 's' : ''} ago posted`;
+    return `${diffYear} year${diffYear > 1 ? 's' : ''} ago posted`;
+};
 
 const formatBudgetRange = (value, t) => {
     if (value === undefined || value === null || value === '') return 'N/A';
@@ -69,7 +72,6 @@ const ActiveTenders = () => {
 
     const [tenders, setTenders] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [locations, setLocations] = useState(['All']); // Dynamically loaded? Or static list for now?
 
     const debouncedSearch = useDebounceValue(searchTerm, 500);
 
@@ -82,12 +84,14 @@ const ActiveTenders = () => {
                 status: statusFilter
             };
             const data = await BackendApiService.getTenders(filters);
-            setTenders(data);
+            // Sort by created_at descending (latest first)
+            const sorted = [...data].sort((a, b) => {
+                const dateA = a.created_at ? new Date(a.created_at) : new Date(0);
+                const dateB = b.created_at ? new Date(b.created_at) : new Date(0);
+                return dateB - dateA;
+            });
+            setTenders(sorted);
 
-            // Extract locations if we want dynamic list (or just keep static 'All' + common cities)
-            // For now let's just keep 'All' and maybe add unique from data if we want, 
-            // but server filtering implies we don't have all data.
-            // Let's stick to a static list or fetch locations separately. For MVP, input text or static list.
         } catch (err) {
             console.error("Failed to load tenders", err);
             setTenders([]);
@@ -110,6 +114,7 @@ const ActiveTenders = () => {
             setTenders(prev => prev.map(t =>
                 t.id === tender.id ? { ...t, isUnlocked: true } : t
             ));
+            window.dispatchEvent(new CustomEvent('appalto:credits-updated'));
             alert(t('contractor.tenders.unlockSuccess'));
             // After successful unlock, take user directly to tender details
             navigate(`/contractor/tenders/${tender.id}`);
@@ -131,7 +136,7 @@ const ActiveTenders = () => {
 
     const hasActiveFilters = searchTerm !== '' || locationFilter !== 'All' || statusFilter !== 'All';
 
-    const availableLocations = ['All', ...ITALIAN_PROVINCES];
+    const availableLocations = ['All', ...ITALIAN_REGIONS];
 
     const statuses = ['All', 'Open', 'Urgent'];
 
@@ -225,7 +230,7 @@ const ActiveTenders = () => {
                                 }
                                 ${tender.status === 'Urgent' && tender.isUnlocked ? 'border-l-red-500 hover:border-l-red-600' : ''}
                             `}
-                            onClick={(e) => {
+                            onClick={() => {
                                 if (tender.isUnlocked) {
                                     navigate(`/contractor/tenders/${tender.id}`);
                                 }
@@ -279,6 +284,18 @@ const ActiveTenders = () => {
                                                 <span className="text-green-600 font-bold">€</span>
                                                 <span className="font-bold">{formatBudgetRange(tender.budget, t)}</span>
                                             </div>
+                                            {!tender.isUnlocked && (
+                                                <div className="flex items-center gap-1.5 text-sm text-amber-800 bg-amber-50 px-3 py-1.5 rounded-full border border-amber-100 group-hover:bg-amber-100 transition-all">
+                                                    <Lock className="h-4 w-4 text-amber-600" />
+                                                    <span className="font-bold">{tender.unlockCredits ?? tender.unlock_credits ?? 0} credits to unlock</span>
+                                                </div>
+                                            )}
+                                            {tender.created_at && (
+                                                <div className="flex items-center gap-1.5 text-sm text-gray-500 bg-purple-50 px-3 py-1.5 rounded-full border border-purple-100 group-hover:bg-purple-100 transition-all">
+                                                    <Clock className="h-4 w-4 text-purple-500" />
+                                                    <span className="font-medium">{timeAgo(tender.created_at)}</span>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
 
@@ -302,7 +319,7 @@ const ActiveTenders = () => {
                                                 }}
                                             >
                                                 <Lock className="w-4 h-4 mr-2" />
-                                                {t('contractor.tenders.unlockButton')}
+                                                Unlock for {tender.unlockCredits ?? tender.unlock_credits ?? 0} credits
                                             </Button>
                                         )}
                                     </div>
@@ -328,4 +345,3 @@ const ActiveTenders = () => {
 };
 
 export default ActiveTenders;
-
