@@ -12,6 +12,7 @@ import Register from './pages/auth/Register';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import ResetPassword from './pages/auth/ResetPassword';
 import LandingPage from './pages/LandingPage';
+import HowItWorksPage from './pages/HowItWorksPage';
 
 // Admin Pages
 import AdminDashboard from './pages/admin/Dashboard';
@@ -38,6 +39,7 @@ import RevenueDashboard from './pages/owner/RevenueDashboard';
 import AuditLog from './pages/owner/AuditLog';
 import Configuration from './pages/owner/Configuration';
 import NotificationControl from './pages/owner/NotificationControl';
+import Advertisements from './pages/owner/Advertisements';
 
 // Contractor Pages
 import ContractorDashboard from './pages/contractor/Dashboard';
@@ -62,6 +64,7 @@ function App() {
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/" element={<LandingPage />} />
+              <Route path="/come-funziona" element={<HowItWorksPage />} />
 
               {/* Protected Routes */}
               <Route element={<ProtectedRoute allowedRoles={['admin', 'contractor']} />}>
@@ -120,6 +123,7 @@ function App() {
                   <Route path="/owner/audit" element={<AuditLog />} />
                   <Route path="/owner/config" element={<Configuration />} />
                   <Route path="/owner/notifications" element={<NotificationControl />} />
+                  <Route path="/owner/advertisements" element={<Advertisements />} />
                   <Route path="/owner/profile" element={<AdminProfile />} />
                 </Route>
               </Route>

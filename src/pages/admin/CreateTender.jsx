@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
-import { Upload, Loader2 } from 'lucide-react';
+import { Upload, Loader2, Plus, Trash2, ChevronUp, ChevronDown } from 'lucide-react';
 import BackendApiService from '../../services/backendApi';
 import { useAuth } from '../../context/AuthContext';
 import { ITALIAN_REGIONS } from '../../constants/italianRegions';
@@ -449,21 +449,21 @@ const CreateTender = () => {
                                     {extractionStatus === 'uploading' || extractionStatus === 'processing' ? (
                                         <>
                                             <Loader2 className="h-10 w-10 text-blue-600 animate-spin" />
-                                            <p className="text-sm text-gray-600 font-medium">{t('admin.create.boq.upload.processing')} {uploadProgress}%</p>
+                                            <p className="text-sm text-gray-600 font-medium"><span>{t('admin.create.boq.upload.processing')}</span><span> {uploadProgress}%</span></p>
                                         </>
                                     ) : extractionStatus === 'completed' ? (
                                         <>
                                             <div className="h-10 w-10 bg-green-100 rounded-full flex items-center justify-center">
                                                 <Upload className="h-5 w-5 text-green-600" />
                                             </div>
-                                            <p className="text-sm font-medium text-gray-900">{t('admin.create.boq.extraction.complete')}</p>
-                                            <p className="text-xs text-gray-500">{t('admin.create.boq.extraction.review')}</p>
+                                            <p className="text-sm font-medium text-gray-900"><span>{t('admin.create.boq.extraction.complete')}</span></p>
+                                            <p className="text-xs text-gray-500"><span>{t('admin.create.boq.extraction.review')}</span></p>
                                         </>
                                     ) : (
                                         <>
                                             <Upload className="h-10 w-10 text-gray-400" />
-                                            <p className="text-sm text-gray-600 font-medium">{t('admin.create.boq.upload.click')}</p>
-                                            <p className="text-xs text-gray-400">{t('admin.create.boq.upload.format')}</p>
+                                            <p className="text-sm text-gray-600 font-medium"><span>{t('admin.create.boq.upload.click')}</span></p>
+                                            <p className="text-xs text-gray-400"><span>{t('admin.create.boq.upload.format')}</span></p>
                                         </>
                                     )}
                                 </div>
@@ -482,7 +482,7 @@ const CreateTender = () => {
                                 return (
                                     <div className="space-y-2">
                                         <p className="text-xs text-gray-600">
-                                            {t('admin.create.boq.uploadedFile')}:{" "}
+                                            <span>{t('admin.create.boq.uploadedFile')}:{" "}</span>
                                             <span className="font-medium break-all">{fileLabel}</span>
                                             {sizeKb && <span className="text-gray-400"> ({sizeKb} KB)</span>}
                                         </p>
@@ -522,12 +522,130 @@ const CreateTender = () => {
                                 );
                             })()}
 
-                            {/* Extracted BOQ items are sent with the form but not shown here:
-                                only contractors see and edit the items table (preventivo). */}
+                            {/* Editable BOQ items table */}
                             {boqItems.length > 0 && (
-                                <p className="text-sm text-gray-500 pt-2 border-t mt-2">
-                                    {t('admin.create.boq.extractedItemsSaved', { count: boqItems.length })}
-                                </p>
+                                <div className="mt-4 space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <h3 className="text-sm font-bold text-gray-900">
+                                                <span>Extracted BOQ Items</span>
+                                                <span className="ml-2 px-2 py-0.5 text-xs bg-blue-100 text-blue-700 rounded-full font-semibold">{boqItems.length}</span>
+                                            </h3>
+                                            <p className="text-xs text-gray-500 mt-0.5"><span>Review all items below. Edit, delete or add missing rows before saving.</span></p>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => setBoqItems(prev => [...prev, { description: '', unit: '', quantity: 1, item_type: 'unit_priced' }])}
+                                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-blue-600 border border-blue-200 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+                                        >
+                                            <Plus className="h-3.5 w-3.5" />
+                                            Add Row
+                                        </button>
+                                    </div>
+
+                                    <div className="border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full text-sm">
+                                                <thead className="bg-gray-50 border-b border-gray-200">
+                                                    <tr>
+                                                        <th className="px-3 py-2.5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider w-8">#</th>
+                                                        <th className="px-3 py-2.5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Description</th>
+                                                        <th className="px-3 py-2.5 text-center text-xs font-bold text-gray-500 uppercase tracking-wider w-20">Unit</th>
+                                                        <th className="px-3 py-2.5 text-center text-xs font-bold text-gray-500 uppercase tracking-wider w-20">Qty</th>
+                                                        <th className="px-3 py-2.5 text-center text-xs font-bold text-gray-500 uppercase tracking-wider w-24">Type</th>
+                                                        <th className="px-3 py-2.5 w-16 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-gray-100">
+                                                    {boqItems.map((item, index) => (
+                                                        <tr key={index} className="group hover:bg-blue-50/30 transition-colors">
+                                                            <td className="px-3 py-2 text-xs text-gray-400 font-medium">{index + 1}</td>
+                                                            <td className="px-3 py-2">
+                                                                <textarea
+                                                                    value={item.description}
+                                                                    onChange={e => setBoqItems(prev => prev.map((it, i) => i === index ? { ...it, description: e.target.value } : it))}
+                                                                    rows={2}
+                                                                    placeholder="Item description..."
+                                                                    className="w-full text-sm text-gray-800 resize-none bg-transparent border border-transparent focus:border-blue-300 focus:bg-white rounded px-2 py-1 outline-none transition-colors leading-snug min-w-[200px]"
+                                                                />
+                                                            </td>
+                                                            <td className="px-3 py-2">
+                                                                <input
+                                                                    type="text"
+                                                                    value={item.unit}
+                                                                    onChange={e => setBoqItems(prev => prev.map((it, i) => i === index ? { ...it, unit: e.target.value } : it))}
+                                                                    placeholder="mq, nr…"
+                                                                    className="w-full text-sm text-center text-gray-700 bg-transparent border border-transparent focus:border-blue-300 focus:bg-white rounded px-1 py-1 outline-none transition-colors"
+                                                                />
+                                                            </td>
+                                                            <td className="px-3 py-2">
+                                                                <input
+                                                                    type="number"
+                                                                    min="0"
+                                                                    step="any"
+                                                                    value={item.quantity}
+                                                                    disabled={item.item_type === 'lump_sum'}
+                                                                    onChange={e => setBoqItems(prev => prev.map((it, i) => i === index ? { ...it, quantity: parseFloat(e.target.value) || 0 } : it))}
+                                                                    className="w-full text-sm text-center font-semibold text-gray-900 bg-transparent border border-transparent focus:border-blue-300 focus:bg-white rounded px-1 py-1 outline-none transition-colors disabled:opacity-40"
+                                                                />
+                                                            </td>
+                                                            <td className="px-3 py-2">
+                                                                <select
+                                                                    value={item.item_type}
+                                                                    onChange={e => setBoqItems(prev => prev.map((it, i) => i === index ? { ...it, item_type: e.target.value } : it))}
+                                                                    className="w-full text-xs text-center text-gray-600 bg-transparent border border-transparent focus:border-blue-300 focus:bg-white rounded px-1 py-1 outline-none transition-colors cursor-pointer"
+                                                                >
+                                                                    <option value="unit_priced">Unit priced</option>
+                                                                    <option value="lump_sum">Lump sum</option>
+                                                                </select>
+                                                            </td>
+                                                            <td className="px-3 py-2">
+                                                                <div className="flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => setBoqItems(prev => { const n = [...prev]; if (index > 0) { [n[index-1], n[index]] = [n[index], n[index-1]]; } return n; })}
+                                                                        disabled={index === 0}
+                                                                        className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded disabled:opacity-20"
+                                                                        title="Move up"
+                                                                    >
+                                                                        <ChevronUp className="h-3.5 w-3.5" />
+                                                                    </button>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => setBoqItems(prev => { const n = [...prev]; if (index < n.length-1) { [n[index], n[index+1]] = [n[index+1], n[index]]; } return n; })}
+                                                                        disabled={index === boqItems.length - 1}
+                                                                        className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded disabled:opacity-20"
+                                                                        title="Move down"
+                                                                    >
+                                                                        <ChevronDown className="h-3.5 w-3.5" />
+                                                                    </button>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => setBoqItems(prev => prev.filter((_, i) => i !== index))}
+                                                                        className="p-1 text-red-400 hover:text-red-600 hover:bg-red-50 rounded"
+                                                                        title="Delete row"
+                                                                    >
+                                                                        <Trash2 className="h-3.5 w-3.5" />
+                                                                    </button>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        {/* Add row — bottom of table */}
+                                        <button
+                                            type="button"
+                                            onClick={() => setBoqItems(prev => [...prev, { description: '', unit: '', quantity: 1, item_type: 'unit_priced' }])}
+                                            className="w-full flex items-center justify-center gap-2 py-2.5 text-xs font-bold text-blue-600 hover:bg-blue-50 border-t border-gray-200 transition-colors"
+                                        >
+                                            <Plus className="h-3.5 w-3.5" />
+                                            <span>Add missing row</span>
+                                        </button>
+                                    </div>
+                                </div>
                             )}
                         </div>
 

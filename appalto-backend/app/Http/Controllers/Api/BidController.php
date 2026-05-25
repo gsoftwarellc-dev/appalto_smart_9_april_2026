@@ -7,12 +7,13 @@ use App\Http\Requests\StoreBidRequest;
 use App\Http\Resources\BidResource;
 use App\Models\Bid;
 use App\Models\BoqItem;
+use App\Models\SystemConfig;
 use App\Models\Tender;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification as NotificationFacade;
 use Illuminate\Notifications\Messages\DatabaseMessage;
-// use Illuminate\Support\Facades\DB; // Removed DB facade usage
 
 class BidController extends Controller
 {
@@ -165,13 +166,51 @@ class BidController extends Controller
      */
     public function award($bidId)
     {
-        $bid = Bid::with('tender')->findOrFail($bidId);
+        $bid = Bid::with(['tender', 'contractor'])->findOrFail($bidId);
         $tender = $bid->tender;
-
-        $tender->award($bid->id);
-
-        // Notify contractor about award
         $contractor = $bid->contractor;
+
+        DB::transaction(function () use ($bid, $tender, $contractor) {
+            $tender->award($bid->id);
+
+            // Calculate success fee with possible early-adopter discount
+            $baseFeePercent = (float) (SystemConfig::where('key', 'successFeePercent')->value('value') ?? 3.0);
+            $discountPercent = 0.0;
+
+            $discountEnabled = SystemConfig::where('key', 'successFeeDiscountEnabled')->value('value');
+            if ($discountEnabled === '1' || $discountEnabled === 'true') {
+                $discountFeePercent = (float) (SystemConfig::where('key', 'successFeeDiscountPercent')->value('value') ?? 0);
+                $discountDays       = (int)   (SystemConfig::where('key', 'successFeeDiscountDays')->value('value') ?? 0);
+
+                if ($discountFeePercent > 0 && $contractor) {
+                    $registeredAt = $contractor->created_at;
+                    $withinWindow = $discountDays <= 0 || $registeredAt->diffInDays(now()) <= $discountDays;
+
+                    if ($withinWindow) {
+                        $discountPercent = min($discountFeePercent, $baseFeePercent);
+                    }
+                }
+            }
+
+            $effectiveFeePercent = max(0, $baseFeePercent - $discountPercent);
+            $feeAmount = round($bid->total_amount * ($effectiveFeePercent / 100), 2);
+
+            if ($contractor && $feeAmount > 0) {
+                $contractor->transactions()->create([
+                    'type'        => 'fee',
+                    'amount'      => 0,
+                    'cash_amount' => $feeAmount,
+                    'description' => sprintf(
+                        'Success fee (%.1f%%) for tender: %s%s',
+                        $effectiveFeePercent,
+                        $tender->title,
+                        $discountPercent > 0 ? sprintf(' [%.1f%% discount applied]', $discountPercent) : ''
+                    ),
+                    'status' => 'completed',
+                ]);
+            }
+        });
+
         if ($contractor) {
             $contractor->notify(new \App\Notifications\BidAwardedNotification($bid));
         }

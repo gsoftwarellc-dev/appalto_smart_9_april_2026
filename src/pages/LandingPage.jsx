@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import {
     CheckCircle, Briefcase, Users, LayoutDashboard, FileText,
-    ArrowRight, Star, Menu, X, Building, TrendingUp, Shield
+    ArrowRight, Menu, X, Building, TrendingUp, Shield
 } from 'lucide-react';
 import { motion, AnimatePresence, useScroll, useTransform, useMotionTemplate, useMotionValue } from 'framer-motion';
 import {
@@ -12,6 +12,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from '../components/ui/LanguageSwitcher';
 import ItalyMapSection from '../components/landing/ItalyMapSection';
+import BannerSection from '../components/landing/BannerSection';
 import headerLogo from '../../logo_transparacny.png';
 
 
@@ -89,27 +90,6 @@ const LandingPage = () => {
     const heroOpacity = useTransform(scrollY, [0, 500], [1, 0.5]);
 
     const testimonials = [
-        {
-            id: 1,
-            text: t('landing.testimonials.t1'),
-            author: "Marco Rossi",
-            role: "Property Developer",
-            company: "Rossi Estates"
-        },
-        {
-            id: 2,
-            text: t('landing.testimonials.t2'),
-            author: "Giuseppe Verdi",
-            role: "General Contractor",
-            company: "Verdi Costruzioni"
-        },
-        {
-            id: 3,
-            text: t('landing.testimonials.t3'),
-            author: "Elena Bianchi",
-            role: "Project Manager",
-            company: "Milano Towers"
-        }
     ];
 
     const contractorFeatureItems = [
@@ -493,12 +473,11 @@ const LandingPage = () => {
                                     ))}
                                 </ul>
 
-                                <Link to="/register">
+                                <Link to="/come-funziona">
                                     <Button
-                                        variant="outline"
-                                        className="mt-2 h-12 rounded-xl border-[#2959a6]/55 bg-[#07173a]/65 px-6 text-[#9cc0ff] transition-all hover:scale-[1.02] hover:border-[#f2c661]/45 hover:bg-[#0c2451] hover:text-white"
+                                        className="mt-4 h-14 rounded-2xl bg-gradient-to-r from-[#5f9d37] via-[#b6a330] to-[#eb761b] px-8 text-base font-bold text-white shadow-[0_12px_35px_rgba(235,118,27,0.30)] transition-all hover:scale-[1.03] hover:shadow-[0_18px_45px_rgba(95,157,55,0.35)]"
                                     >
-                                        {t('landing.features.cta')}
+                                        {t('landing.features.cta')} →
                                     </Button>
                                 </Link>
                             </motion.div>
@@ -520,16 +499,16 @@ const LandingPage = () => {
                                 <motion.div
                                     animate={{ y: [0, -10, 0] }}
                                     transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-                                    className="absolute -bottom-6 left-0 max-w-[290px] rounded-2xl border border-white/10 bg-[#16233f]/92 p-4 shadow-[0_24px_50px_rgba(2,8,23,0.45)] backdrop-blur-md md:left-4"
+                                    className="absolute -bottom-6 left-0 max-w-[300px] rounded-2xl border border-white/20 bg-[#0d1e3d] p-5 shadow-[0_24px_50px_rgba(2,8,23,0.65)] backdrop-blur-md md:left-4"
                                 >
                                     <div className="flex items-start gap-3">
-                                        <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border border-[#1d5d3f]/55 bg-[#0a2018]">
+                                        <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#0a2018] border border-[#69da8a]/40">
                                             <CheckCircle className="h-5 w-5 text-[#69da8a]" />
                                         </div>
-                                        <div className="space-y-1">
-                                            <p className="text-[11px] uppercase tracking-[0.18em] text-slate-400">{t('landing.features.statusLabel')}</p>
-                                            <p className="text-lg font-bold leading-none text-white">{t('landing.features.statusTitle')}</p>
-                                            <p className="text-sm leading-relaxed text-slate-300/82">{t('landing.features.statusDesc')}</p>
+                                        <div className="space-y-1.5">
+                                            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#f2c661]">{t('landing.features.statusLabel')}</p>
+                                            <p className="text-base font-bold leading-tight text-white">{t('landing.features.statusTitle')}</p>
+                                            <p className="text-sm leading-relaxed text-slate-200">{t('landing.features.statusDesc')}</p>
                                         </div>
                                     </div>
                                 </motion.div>
@@ -651,43 +630,6 @@ const LandingPage = () => {
                 </div>
             </section>
 
-            {/* Testimonials */}
-            <section className="py-24 bg-[#0B1120] border-t border-white/5">
-                <div className="container mx-auto px-4 md:px-8">
-                    <h2 className="text-3xl font-bold text-center text-white mb-16">{t('landing.testimonials.title')}</h2>
-                    <div className="grid md:grid-cols-3 gap-8">
-                        {testimonials.map((t, i) => (
-                            <motion.div
-                                key={t.id}
-                                initial={{ opacity: 0, scale: 0.9 }}
-                                whileInView={{ opacity: 1, scale: 1 }}
-                                viewport={{ once: true }}
-                                transition={{ delay: i * 0.2 }}
-                            >
-                                <SpotlightCard className="h-full">
-                                    <div className="p-8 h-full flex flex-col justify-between">
-                                        <div>
-                                            <div className="flex gap-1 text-yellow-400 mb-4">
-                                                {[1, 2, 3, 4, 5].map(star => <Star key={star} className="h-4 w-4 fill-current" />)}
-                                            </div>
-                                            <p className="text-gray-300 mb-6 italic text-lg leading-relaxed">"{t.text}"</p>
-                                        </div>
-                                        <div className="flex items-center gap-3 mt-4 border-t border-white/10 pt-4">
-                                            <div className="h-10 w-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold shadow-md">
-                                                {t.author.charAt(0)}
-                                            </div>
-                                            <div>
-                                                <p className="font-bold text-white text-sm">{t.author}</p>
-                                                <p className="text-xs text-gray-500">{t.role}, {t.company}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </SpotlightCard>
-                            </motion.div>
-                        ))}
-                    </div>
-                </div>
-            </section>
 
             <section className="py-24 bg-[#0B1120] overflow-hidden relative border-t border-white/5">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-blue-900/20 via-transparent to-transparent"></div>
@@ -771,6 +713,8 @@ const LandingPage = () => {
                     </div>
                 </div>
             </section>
+
+            <BannerSection />
 
             {/* Final CTA Section */}
             <section className="py-24 relative overflow-hidden bg-[#071019] border-t border-white/5">

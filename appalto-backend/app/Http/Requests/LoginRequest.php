@@ -13,7 +13,6 @@ class LoginRequest extends FormRequest
     {
         $this->merge([
             'email' => strtolower(trim((string) $this->input('email'))),
-            'role' => trim((string) $this->input('role')),
         ]);
     }
 
@@ -35,7 +34,6 @@ class LoginRequest extends FormRequest
         return [
             'email' => 'required|string|email|max:255',
             'password' => 'required|string|max:255',
-            'role' => 'required|in:admin,contractor,owner',
         ];
     }
 
@@ -46,9 +44,6 @@ class LoginRequest extends FormRequest
      */
     public function messages(): array
     {
-        return [
-            'role.required' => 'Please select a dashboard type.',
-            'role.in' => 'Invalid dashboard type selected.',
-        ];
+        return [];
     }
 }

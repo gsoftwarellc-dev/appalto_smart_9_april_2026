@@ -10,6 +10,13 @@ use App\Http\Controllers\Api\PdfExtractionController;
 use Illuminate\Support\Facades\Route;
 
 // Public routes
+Route::get('/banners', function () {
+    $raw = \App\Models\SystemConfig::where('key', 'homepageBanners')->value('value');
+    $banners = $raw ? json_decode($raw, true) : [];
+    $active = array_values(array_filter(is_array($banners) ? $banners : [], fn($b) => !empty($b['active'])));
+    return response()->json($active);
+});
+
 Route::post('/test-upload', function(\Illuminate\Http\Request $request) {
     if (!$request->hasFile('file')) return response()->json(['error' => 'No file'], 400);
     $path = $request->file('file')->store('test', 'public');

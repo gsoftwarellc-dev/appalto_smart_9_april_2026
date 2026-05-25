@@ -7,6 +7,7 @@ import { Label } from '../../components/ui/Label';
 import { CreditCard, ArrowUpRight, ArrowDownRight, Loader2, Coins, ShoppingCart, Shield } from 'lucide-react';
 import BackendApiService from '../../services/backendApi';
 import { formatEuro } from '../../utils/currency';
+import { Badge } from '../../components/ui/Badge';
 
 
 /* ─── Main Billing Page ─── */

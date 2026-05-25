@@ -37,7 +37,7 @@ class StripeController extends Controller
         $frontendUrl = rtrim(env('FRONTEND_URL', 'http://localhost:5174'), '/');
 
         $session = $this->stripe()->checkout->sessions->create([
-            'payment_method_types' => ['card'],
+            'payment_method_types' => ['card', 'paypal'],
             'line_items' => [[
                 'price_data' => [
                     'currency' => 'eur',

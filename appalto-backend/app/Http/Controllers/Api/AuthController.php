@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Resources\UserResource;
+use App\Models\SystemConfig;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -66,6 +67,19 @@ class AuthController extends Controller
 
         $user = User::create($userAttributes);
 
+        if ($role === 'contractor') {
+            $welcomeCredits = (int) (SystemConfig::where('key', 'welcomeCredits')->value('value') ?? 0);
+            if ($welcomeCredits > 0) {
+                $credit = $user->credits()->create(['balance' => $welcomeCredits]);
+                $user->transactions()->create([
+                    'type'        => 'welcome',
+                    'amount'      => $welcomeCredits,
+                    'description' => 'Welcome bonus credits',
+                    'status'      => 'completed',
+                ]);
+            }
+        }
+
         return response()->json([
             'user' => new UserResource($user),
             'message' => 'Registration successful. Please log in.',
@@ -80,7 +94,7 @@ class AuthController extends Controller
         $credentials = $request->validated();
         $user = User::where('email', $credentials['email'])->first();
 
-        if (! $user || ! Hash::check($credentials['password'], $user->password) || $user->role !== $credentials['role']) {
+        if (! $user || ! Hash::check($credentials['password'], $user->password)) {
             throw ValidationException::withMessages([
                 'email' => ['The provided credentials are incorrect.'],
             ]);

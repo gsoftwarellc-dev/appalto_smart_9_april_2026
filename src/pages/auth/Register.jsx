@@ -90,7 +90,7 @@ const Register = () => {
             await BackendApiService.register(payload);
             setSuccessMessage(t('auth.registrationSuccess'));
             setSuccessAction(t('auth.preparingDashboard'));
-            const result = await login(payload.email, payload.password, payload.role);
+            const result = await login(payload.email, payload.password);
 
             if (result.success) {
                 navigate(DASHBOARD_PATHS[payload.role], { replace: true });

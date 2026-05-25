@@ -3,8 +3,8 @@ import apiClient from './apiClient';
 const BackendApiService = {
     // ============ Authentication ============
 
-    async login(email, password, role) {
-        const { data } = await apiClient.post('/login', { email, password, role });
+    async login(email, password) {
+        const { data } = await apiClient.post('/login', { email, password });
         if (data.token) {
             localStorage.setItem('auth_token', data.token);
             localStorage.setItem('appalto_user', JSON.stringify(data.user));
@@ -325,6 +325,11 @@ const BackendApiService = {
     async getAuditLogs(filters = {}) {
         const params = new URLSearchParams(filters);
         const { data } = await apiClient.get('/owner/audit-logs?' + params.toString());
+        return data;
+    },
+
+    async getBanners() {
+        const { data } = await apiClient.get('/banners');
         return data;
     },
 

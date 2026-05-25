@@ -10,7 +10,8 @@ import {
     Settings,
     Shield,
     User,
-    LogOut
+    LogOut,
+    Megaphone
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 
@@ -25,6 +26,10 @@ const OwnerSidebar = ({ isOpen, onClose }) => {
         { to: '/owner/revenue', icon: DollarSign, label: t('owner.sidebar.revenue') },
         { to: '/owner/config', icon: Settings, label: t('owner.sidebar.configuration') },
         { to: '/owner/profile', icon: User, label: t('owner.sidebar.profile') },
+    ];
+
+    const marketingLinks = [
+        { to: '/owner/advertisements', icon: Megaphone, label: t('owner.sidebar.advertisements') },
     ];
 
     return (
@@ -65,12 +70,36 @@ const OwnerSidebar = ({ isOpen, onClose }) => {
                             key={link.to}
                             to={link.to}
                             end={link.end}
-                            onClick={onClose} // Close on link click on mobile
+                            onClick={onClose}
                             className={({ isActive }) =>
                                 cn(
                                     "flex items-center px-4 py-3 rounded-lg text-sm font-medium transition-colors",
                                     isActive
                                         ? "bg-blue-600 text-white"
+                                        : "text-slate-400 hover:bg-slate-800 hover:text-white"
+                                )
+                            }
+                        >
+                            <link.icon className="mr-3 h-5 w-5" />
+                            {link.label}
+                        </NavLink>
+                    ))}
+
+                    {/* Marketing section */}
+                    <div className="px-4 pt-5 pb-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                        {t('owner.sidebar.marketing')}
+                    </div>
+                    {marketingLinks.map((link) => (
+                        <NavLink
+                            key={link.to}
+                            to={link.to}
+                            end={link.end}
+                            onClick={onClose}
+                            className={({ isActive }) =>
+                                cn(
+                                    "flex items-center px-4 py-3 rounded-lg text-sm font-medium transition-colors",
+                                    isActive
+                                        ? "bg-orange-500 text-white"
                                         : "text-slate-400 hover:bg-slate-800 hover:text-white"
                                 )
                             }

@@ -20,13 +20,13 @@ export const AuthProvider = ({ children }) => {
         setIsLoading(false);
     }, []);
 
-    const login = async (email, password, role) => {
+    const login = async (email, password) => {
         try {
-            const user = await BackendApiService.login(email, password, role);
+            const user = await BackendApiService.login(email, password);
 
             setUser(user);
             setIsAuthenticated(true);
-            return { success: true };
+            return { success: true, user };
         } catch (error) {
             console.error('Login error:', error);
             const isNetworkError = !error.response && (error.message === 'Network Error' || error.code === 'ERR_NETWORK');

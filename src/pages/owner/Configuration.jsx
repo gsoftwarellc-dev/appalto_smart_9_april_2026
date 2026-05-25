@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../..
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { Label } from '../../components/ui/Label';
-import { Save, RefreshCw, Settings, ToggleLeft, ToggleRight, Coins, Euro, Eye, EyeOff, CheckCircle2, AlertCircle, ExternalLink, Link2, Unlink, Copy, Check, Lock as LockIcon } from 'lucide-react';
+import { Save, RefreshCw, Settings, ToggleLeft, ToggleRight, Coins, Euro, Eye, EyeOff, CheckCircle2, AlertCircle, ExternalLink, Link2, Unlink, Copy, Check, Lock as LockIcon, Gift, Percent, ImagePlus, Trash2, GripVertical, ChevronUp, ChevronDown, Megaphone } from 'lucide-react';
 import { Switch } from '../../components/ui/Switch';
 
 import { Trans } from 'react-i18next';
@@ -45,13 +45,52 @@ const Configuration = () => {
         creditRequirementMode: 'budget_range',
         fixedTenderUnlockCredits: 50,
         budgetRangeCreditRules: DEFAULT_BUDGET_RANGE_RULES,
+        welcomeCredits: 0,
         successFeePercent: 3.0,
+        successFeeDiscountEnabled: false,
+        successFeeDiscountPercent: 0,
+        successFeeDiscountDays: 0,
         tenderDurationDays: 15,
         autoApproveClients: false,
         stripePublishableKey: '',
         stripeSecretKey: '',
         stripeTestMode: true,
     });
+
+    const [banners, setBanners] = useState([]);
+
+    const newBanner = () => ({
+        id: Date.now(),
+        active: true,
+        image: '',
+        tag: '',
+        title: '',
+        subtitle: '',
+        ctaText: '',
+        ctaUrl: '',
+        ctaColor: '#eb761b',
+        bgColor: 'linear-gradient(135deg,#1e3a5f 0%,#0f2744 100%)',
+    });
+
+    const updateBanner = (id, field, value) =>
+        setBanners(prev => prev.map(b => b.id === id ? { ...b, [field]: value } : b));
+
+    const deleteBanner = (id) => setBanners(prev => prev.filter(b => b.id !== id));
+
+    const moveBanner = (index, dir) => setBanners(prev => {
+        const next = [...prev];
+        const target = index + dir;
+        if (target < 0 || target >= next.length) return prev;
+        [next[index], next[target]] = [next[target], next[index]];
+        return next;
+    });
+
+    const handleBannerImage = (id, file) => {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = e => updateBanner(id, 'image', e.target.result);
+        reader.readAsDataURL(file);
+    };
 
     const [stripeConnected, setStripeConnected] = useState(false);
     const [stripeConnecting, setStripeConnecting] = useState(false);
@@ -71,7 +110,12 @@ const Configuration = () => {
                     const formatted = { ...data };
                     if (formatted.autoApproveClients) formatted.autoApproveClients = formatted.autoApproveClients === '1' || formatted.autoApproveClients === 'true';
                     if (formatted.stripeTestMode) formatted.stripeTestMode = formatted.stripeTestMode === '1' || formatted.stripeTestMode === 'true' || formatted.stripeTestMode === true;
+                    if (formatted.successFeeDiscountEnabled !== undefined) formatted.successFeeDiscountEnabled = formatted.successFeeDiscountEnabled === '1' || formatted.successFeeDiscountEnabled === 'true' || formatted.successFeeDiscountEnabled === true;
                     formatted.budgetRangeCreditRules = normalizeBudgetRangeRules(formatted.budgetRangeCreditRules);
+                    if (formatted.homepageBanners) {
+                        setBanners(Array.isArray(formatted.homepageBanners) ? formatted.homepageBanners : []);
+                        delete formatted.homepageBanners;
+                    }
                     const merged = { ...config, ...formatted };
                     setConfig(merged);
                     savedConfigRef.current = JSON.stringify(merged);
@@ -104,7 +148,7 @@ const Configuration = () => {
     const handleSave = async () => {
         setIsSaving(true);
         try {
-            await api.updateSystemConfig(config);
+            await api.updateSystemConfig({ ...config, creditRequirementMode: 'budget_range', homepageBanners: banners });
             savedConfigRef.current = JSON.stringify(config);
             setShowSaved(true);
             setTimeout(() => setShowSaved(false), 2500);
@@ -219,6 +263,114 @@ const Configuration = () => {
                 </CardContent>
             </Card>
 
+            {/* Welcome Credits for New Contractors */}
+            <Card className="border border-green-200 shadow-sm overflow-hidden">
+                <div className="bg-green-50 px-6 py-4 border-b border-green-100">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-white rounded-lg border border-green-200">
+                            <Gift className="h-5 w-5 text-green-600" />
+                        </div>
+                        <div>
+                            <h3 className="text-gray-900 font-bold text-lg">{t('owner.configuration.welcomeCredits')}</h3>
+                            <p className="text-gray-600 text-sm">{t('owner.configuration.welcomeCreditsDesc')}</p>
+                        </div>
+                    </div>
+                </div>
+                <CardContent className="p-6">
+                    <div className="max-w-sm">
+                        <Label htmlFor="welcome-credits" className="text-sm font-semibold text-gray-700 mb-2 block">
+                            {t('owner.configuration.welcomeCreditsLabel')}
+                        </Label>
+                        <div className="flex items-center gap-3">
+                            <div className="relative flex-1">
+                                <Input
+                                    id="welcome-credits"
+                                    type="number"
+                                    min="0"
+                                    step="1"
+                                    value={config.welcomeCredits}
+                                    onChange={(e) => handleChange('welcomeCredits', e.target.value)}
+                                    className="pr-16 font-semibold text-lg"
+                                />
+                                <span className="absolute right-3 top-2.5 text-xs text-gray-500">{t('owner.configuration.credits')}</span>
+                            </div>
+                        </div>
+                        <p className="text-sm text-gray-500 mt-2">
+                            {parseInt(config.welcomeCredits) > 0
+                                ? t('owner.configuration.welcomeCreditsHint', { credits: config.welcomeCredits })
+                                : t('owner.configuration.welcomeCreditsDisabled')}
+                        </p>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Commission Discount */}
+            <Card className="border border-blue-200 shadow-sm overflow-hidden">
+                <div className="bg-blue-50 px-6 py-4 border-b border-blue-100">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-white rounded-lg border border-blue-200">
+                                <Percent className="h-5 w-5 text-blue-600" />
+                            </div>
+                            <div>
+                                <h3 className="text-gray-900 font-bold text-lg">{t('owner.configuration.commissionDiscount')}</h3>
+                                <p className="text-gray-600 text-sm">{t('owner.configuration.commissionDiscountDesc')}</p>
+                            </div>
+                        </div>
+                        <button onClick={() => handleChange('successFeeDiscountEnabled', !config.successFeeDiscountEnabled)}>
+                            {config.successFeeDiscountEnabled
+                                ? <ToggleRight className="h-8 w-8 text-blue-600" />
+                                : <ToggleLeft className="h-8 w-8 text-gray-400" />}
+                        </button>
+                    </div>
+                </div>
+                <CardContent className={`p-6 transition-opacity ${config.successFeeDiscountEnabled ? 'opacity-100' : 'opacity-40 pointer-events-none'}`}>
+                    <div className="grid gap-5 sm:grid-cols-2 max-w-lg">
+                        <div>
+                            <Label htmlFor="discount-percent" className="text-sm font-semibold text-gray-700 mb-2 block">
+                                {t('owner.configuration.discountPercent')}
+                            </Label>
+                            <div className="relative">
+                                <Input
+                                    id="discount-percent"
+                                    type="number"
+                                    min="0"
+                                    max="100"
+                                    step="0.5"
+                                    value={config.successFeeDiscountPercent}
+                                    onChange={(e) => handleChange('successFeeDiscountPercent', e.target.value)}
+                                    className="pr-8 font-semibold"
+                                />
+                                <span className="absolute right-3 top-2.5 text-gray-500">%</span>
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1">{t('owner.configuration.discountPercentHint', { base: config.successFeePercent, effective: Math.max(0, parseFloat(config.successFeePercent) - parseFloat(config.successFeeDiscountPercent || 0)).toFixed(1) })}</p>
+                        </div>
+                        <div>
+                            <Label htmlFor="discount-days" className="text-sm font-semibold text-gray-700 mb-2 block">
+                                {t('owner.configuration.discountDays')}
+                            </Label>
+                            <div className="relative">
+                                <Input
+                                    id="discount-days"
+                                    type="number"
+                                    min="0"
+                                    step="1"
+                                    value={config.successFeeDiscountDays}
+                                    onChange={(e) => handleChange('successFeeDiscountDays', e.target.value)}
+                                    className="pr-14 font-semibold"
+                                />
+                                <span className="absolute right-3 top-2.5 text-xs text-gray-500">{t('owner.configuration.days')}</span>
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1">
+                                {parseInt(config.successFeeDiscountDays) > 0
+                                    ? t('owner.configuration.discountDaysHint', { days: config.successFeeDiscountDays })
+                                    : t('owner.configuration.discountDaysForever')}
+                            </p>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
             <div className="grid gap-6 md:grid-cols-2">
                 {/* Financial Settings */}
                 <Card>
@@ -304,6 +456,202 @@ const Configuration = () => {
                     </CardContent>
                 </Card>
             </div>
+
+            {/* Homepage Banner Ads */}
+            <Card className="border border-orange-200 shadow-sm overflow-hidden">
+                <div className="bg-orange-50 px-6 py-4 border-b border-orange-100">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-white rounded-lg border border-orange-200">
+                                <Megaphone className="h-5 w-5 text-orange-600" />
+                            </div>
+                            <div>
+                                <h3 className="text-gray-900 font-bold text-lg">Homepage Banners</h3>
+                                <p className="text-gray-600 text-sm">Manage sponsored ads shown on the public homepage. Supports image, text, and a CTA button.</p>
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => setBanners(prev => [...prev, newBanner()])}
+                            className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-orange-700 bg-white border border-orange-300 rounded-lg hover:bg-orange-50 transition-colors"
+                        >
+                            <ImagePlus className="h-4 w-4" />
+                            Add Banner
+                        </button>
+                    </div>
+                </div>
+                <CardContent className="p-6 space-y-5">
+                    {banners.length === 0 && (
+                        <div className="text-center py-10 border-2 border-dashed border-orange-200 rounded-xl">
+                            <Megaphone className="h-10 w-10 text-orange-300 mx-auto mb-3" />
+                            <p className="text-sm font-medium text-gray-500">No banners yet.</p>
+                            <p className="text-xs text-gray-400 mt-1">Click "Add Banner" to create your first sponsored ad.</p>
+                        </div>
+                    )}
+
+                    {banners.map((banner, index) => (
+                        <div key={banner.id} className={`rounded-xl border ${banner.active ? 'border-orange-200 bg-orange-50/30' : 'border-gray-200 bg-gray-50/50'} overflow-hidden`}>
+                            {/* Banner header row */}
+                            <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-200/60 bg-white/60">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xs font-bold text-gray-400">#{index + 1}</span>
+                                    <span className="text-sm font-semibold text-gray-700 truncate max-w-[160px]">{banner.title || 'Untitled banner'}</span>
+                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${banner.active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                                        {banner.active ? 'Active' : 'Hidden'}
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                    <button onClick={() => moveBanner(index, -1)} disabled={index === 0} className="p-1.5 rounded text-gray-400 hover:text-gray-600 hover:bg-gray-100 disabled:opacity-20 transition-colors" title="Move up">
+                                        <ChevronUp className="h-4 w-4" />
+                                    </button>
+                                    <button onClick={() => moveBanner(index, 1)} disabled={index === banners.length - 1} className="p-1.5 rounded text-gray-400 hover:text-gray-600 hover:bg-gray-100 disabled:opacity-20 transition-colors" title="Move down">
+                                        <ChevronDown className="h-4 w-4" />
+                                    </button>
+                                    <button onClick={() => updateBanner(banner.id, 'active', !banner.active)} className={`p-1.5 rounded transition-colors ${banner.active ? 'text-green-600 hover:bg-green-50' : 'text-gray-400 hover:bg-gray-100'}`} title="Toggle visibility">
+                                        {banner.active ? <ToggleRight className="h-5 w-5" /> : <ToggleLeft className="h-5 w-5" />}
+                                    </button>
+                                    <button onClick={() => deleteBanner(banner.id)} className="p-1.5 rounded text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors" title="Delete">
+                                        <Trash2 className="h-4 w-4" />
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Banner fields */}
+                            <div className="p-4 grid gap-4 sm:grid-cols-2">
+                                {/* Image upload */}
+                                <div className="sm:col-span-2">
+                                    <label className="text-xs font-semibold text-gray-600 mb-1.5 block">Banner Image</label>
+                                    <div className="flex items-start gap-3">
+                                        {banner.image ? (
+                                            <div className="relative shrink-0">
+                                                <img src={banner.image} alt="preview" className="h-20 w-36 object-cover rounded-lg border border-gray-200" />
+                                                <button onClick={() => updateBanner(banner.id, 'image', '')} className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600 transition-colors">
+                                                    <Trash2 className="h-3 w-3" />
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <label className="h-20 w-36 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-orange-400 hover:bg-orange-50 transition-colors shrink-0">
+                                                <ImagePlus className="h-6 w-6 text-gray-400" />
+                                                <span className="text-[10px] text-gray-400 mt-1">Upload image</span>
+                                                <input type="file" accept="image/*" className="hidden" onChange={e => handleBannerImage(banner.id, e.target.files[0])} />
+                                            </label>
+                                        )}
+                                        <div className="flex-1 space-y-2">
+                                            <div>
+                                                <label className="text-[11px] text-gray-500 mb-0.5 block">Fallback background color/gradient</label>
+                                                <input
+                                                    type="text"
+                                                    value={banner.bgColor}
+                                                    onChange={e => updateBanner(banner.id, 'bgColor', e.target.value)}
+                                                    placeholder="e.g. #1e3a5f or linear-gradient(...)"
+                                                    className="w-full text-xs border border-gray-200 rounded-md px-2.5 py-1.5 outline-none focus:border-orange-400 bg-white"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Tag */}
+                                <div>
+                                    <label className="text-xs font-semibold text-gray-600 mb-1.5 block">Tag / Label <span className="font-normal text-gray-400">(optional)</span></label>
+                                    <input
+                                        type="text"
+                                        value={banner.tag}
+                                        onChange={e => updateBanner(banner.id, 'tag', e.target.value)}
+                                        placeholder="e.g. Partner, Sponsored, New"
+                                        className="w-full text-sm border border-gray-200 rounded-md px-3 py-2 outline-none focus:border-orange-400 bg-white"
+                                    />
+                                </div>
+
+                                {/* Title */}
+                                <div>
+                                    <label className="text-xs font-semibold text-gray-600 mb-1.5 block">Title</label>
+                                    <input
+                                        type="text"
+                                        value={banner.title}
+                                        onChange={e => updateBanner(banner.id, 'title', e.target.value)}
+                                        placeholder="e.g. Premium Construction Materials"
+                                        className="w-full text-sm border border-gray-200 rounded-md px-3 py-2 outline-none focus:border-orange-400 bg-white"
+                                    />
+                                </div>
+
+                                {/* Subtitle */}
+                                <div className="sm:col-span-2">
+                                    <label className="text-xs font-semibold text-gray-600 mb-1.5 block">Subtitle / Description <span className="font-normal text-gray-400">(optional)</span></label>
+                                    <input
+                                        type="text"
+                                        value={banner.subtitle}
+                                        onChange={e => updateBanner(banner.id, 'subtitle', e.target.value)}
+                                        placeholder="e.g. Trusted by 500+ contractors across Italy"
+                                        className="w-full text-sm border border-gray-200 rounded-md px-3 py-2 outline-none focus:border-orange-400 bg-white"
+                                    />
+                                </div>
+
+                                {/* CTA Text */}
+                                <div>
+                                    <label className="text-xs font-semibold text-gray-600 mb-1.5 block">Button Text <span className="font-normal text-gray-400">(optional)</span></label>
+                                    <input
+                                        type="text"
+                                        value={banner.ctaText}
+                                        onChange={e => updateBanner(banner.id, 'ctaText', e.target.value)}
+                                        placeholder="e.g. Learn More, Visit Site"
+                                        className="w-full text-sm border border-gray-200 rounded-md px-3 py-2 outline-none focus:border-orange-400 bg-white"
+                                    />
+                                </div>
+
+                                {/* CTA URL */}
+                                <div>
+                                    <label className="text-xs font-semibold text-gray-600 mb-1.5 block">Button Link (URL)</label>
+                                    <input
+                                        type="url"
+                                        value={banner.ctaUrl}
+                                        onChange={e => updateBanner(banner.id, 'ctaUrl', e.target.value)}
+                                        placeholder="https://example.com"
+                                        className="w-full text-sm border border-gray-200 rounded-md px-3 py-2 outline-none focus:border-orange-400 bg-white"
+                                    />
+                                </div>
+
+                                {/* CTA button color */}
+                                <div className="flex items-center gap-3">
+                                    <div>
+                                        <label className="text-xs font-semibold text-gray-600 mb-1.5 block">Button Color</label>
+                                        <div className="flex items-center gap-2">
+                                            <input
+                                                type="color"
+                                                value={banner.ctaColor}
+                                                onChange={e => updateBanner(banner.id, 'ctaColor', e.target.value)}
+                                                className="h-9 w-12 rounded border border-gray-200 cursor-pointer p-0.5"
+                                            />
+                                            <span className="text-xs text-gray-500 font-mono">{banner.ctaColor}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Live preview chip */}
+                                {banner.ctaText && (
+                                    <div className="flex items-center">
+                                        <div>
+                                            <label className="text-xs font-semibold text-gray-600 mb-1.5 block">Button Preview</label>
+                                            <span
+                                                className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold text-white shadow"
+                                                style={{ background: banner.ctaColor }}
+                                            >
+                                                {banner.ctaText}
+                                                <ExternalLink className="h-3 w-3" />
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    ))}
+
+                    {banners.length > 0 && (
+                        <p className="text-xs text-gray-400 text-center">
+                            <span>{banners.filter(b => b.active).length} active banner{banners.filter(b => b.active).length !== 1 ? 's' : ''} will rotate automatically on the homepage.</span>
+                        </p>
+                    )}
+                </CardContent>
+            </Card>
 
             {/* Stripe Integration Section */}
             <Card className="border-2 border-purple-100 shadow-sm overflow-hidden">

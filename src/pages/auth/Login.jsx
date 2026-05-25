@@ -51,17 +51,12 @@ const Login = () => {
             return;
         }
 
-        if (!DASHBOARD_PATHS[role]) {
-            setError(t('auth.errors.invalidRole'));
-            setLoading(false);
-            return;
-        }
-
         try {
-            const result = await login(normalizedEmail, password, role);
+            const result = await login(normalizedEmail, password);
             if (result.success) {
                 const from = location.state?.from?.pathname;
-                const defaultPath = DASHBOARD_PATHS[role];
+                const userRole = result.user?.role ?? role;
+                const defaultPath = DASHBOARD_PATHS[userRole] ?? '/';
                 navigate(from?.startsWith(defaultPath) ? from : defaultPath, { replace: true });
             } else {
                 setError(result.message || t('auth.errors.loginFailed'));
@@ -112,11 +107,10 @@ const Login = () => {
                                     onChange={(e) => setRole(e.target.value)}
                                     disabled={loading}
                                     required
-                                    className="flex h-12 w-full items-center justify-between rounded-md border border-gray-300 bg-white px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 appearance-none"
+                                    className="flex h-12 w-full items-center justify-between rounded-md border border-gray-300 bg-white px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 appearance-none"
                                 >
                                     <option value="contractor">{t('auth.contractor')}</option>
                                     <option value="admin">{t('auth.admin')}</option>
-                                    <option value="owner">{t('auth.owner')}</option>
                                 </select>
                                 <ChevronDown className="absolute right-3 top-3 h-4 w-4 text-gray-500 pointer-events-none" />
                             </div>
